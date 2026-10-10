@@ -3,14 +3,15 @@ on:
   workflow_call:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: android-${{ github.ref }}
-  cancel-in-progress: true
+  # Do not interrupt a main-branch run while it may be replacing the rolling
+  # public APK. Pull-request validation remains safely cancellable.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   debug:
     runs-on: ubuntu-latest
@@ -31,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Dependency vulnerability gate
-        run: npm audit --omit=dev --audit-level=high
+        run: npm audit --audit-level=high
       - name: Unit and integration tests
         run: npm test
       - name: Web build
@@ -82,19 +83,28 @@ jobs:
             adb install artifacts/SciCal600-debug.apk
             adb shell svc wifi disable
             adb shell svc data disable
-            adb shell am start -W -n io.github.justinfromhkg.scical600/.MainActivity
-            adb shell input keyevent KEYCODE_BACK
+            adb shell am force-stop io.github.justinfromhkg.scical600
             adb shell am start -W -n io.github.justinfromhkg.scical600/.MainActivity
             adb shell pidof io.github.justinfromhkg.scical600
-            node tests/android-smoke.cjs
+            if ! node tests/android-smoke.cjs; then
+              adb logcat -d > artifacts/android-logcat.txt || true
+              adb shell dumpsys activity activities > artifacts/android-activity.txt || true
+              exit 1
+            fi
       - name: Upload Android smoke evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: Android-smoke-evidence
-          path: artifacts/android-offline.png
+          path: |
+            artifacts/android-offline.png
+            artifacts/android-logcat.txt
+            artifacts/android-activity.txt
           if-no-files-found: ignore
   release:
+    # Reserved for a future orchestrated production release. Standalone v* tag
+    # pushes are intentionally not a trigger, so a debug/client workflow cannot
+    # create a misleading Stable/Latest Release before every signing gate passes.
     if: startsWith(github.ref, 'refs/tags/v')
     needs: debug
     runs-on: ubuntu-latest
@@ -169,18 +179,77 @@ jobs:
         with:
           name: SciCal600-debug
           path: artifacts
-      - name: Publish verified debug APK to GitHub Releases
+      - name: Publish rolling verified testing APK to GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          DEBUG_TAG="android-debug-${GITHUB_SHA:0:12}"
-          LATEST_TAG="android-debug-latest"
-          NOTES="Installable development APK. Passed Web tests, Gradle build/signature checks and Android emulator offline checks. Uses a development signing key, not the production key."
+          set -euo pipefail
+          ROLLING_TAG="android-debug-latest"
+          IMMUTABLE_TAG="android-debug-${GITHUB_SHA:0:12}"
+          APK_SHA256=$(awk '{print $1; exit}' artifacts/SHA256SUMS)
+          APK_SIZE=$(stat -c '%s' artifacts/SciCal600-debug.apk)
+          printf 'commit=%s\nworkflow_run=%s\nfile=SciCal600-debug.apk\nsize_bytes=%s\nsha256=%s\nsigning=development key (not production)\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$APK_SIZE" "$APK_SHA256" > artifacts/build-info.txt
+          printf -v NOTES '%s\n\n%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s' \
+            'Rolling, publicly downloadable Android testing build.' \
+            'This APK passed the Web tests, full high-severity dependency audit, Gradle build/lint, signature/package checks, and Android emulator offline checks. It uses a development signing key and is not the production-signed stable app. A different development certificate can require uninstalling an older testing build.' \
+            'This mutable channel keeps a fixed download tag; that tag is not the asset source revision. Use the source commit, build-info.txt and immutable per-commit Release below for provenance.' \
+            "Source commit: $GITHUB_SHA" \
+            "Immutable audit Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$IMMUTABLE_TAG" \
+            "APK size: $APK_SIZE bytes" \
+            "SHA-256: $APK_SHA256" \
+            "Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
-          gh release view "$DEBUG_TAG" >/dev/null 2>&1 || gh release create "$DEBUG_TAG" --target "$GITHUB_SHA" --prerelease --title "SciCal600 Android debug (${GITHUB_SHA:0:12})" --notes "$NOTES"
-          gh release upload "$DEBUG_TAG" artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt --clobber
+          # Publish the verified build under an immutable per-commit tag before
+          # touching the rolling channel. If the later channel update fails,
+          # this downloadable Release remains available and auditable.
+          if ! gh release view "$IMMUTABLE_TAG" >/dev/null 2>&1; then
+            gh release create "$IMMUTABLE_TAG" --target "$GITHUB_SHA" \
+              --prerelease --latest=false \
+              --title "SciCal600 Android testing build (${GITHUB_SHA:0:12})" \
+              --notes "$NOTES"
+          fi
+          gh release upload "$IMMUTABLE_TAG" \
+            artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
+            --clobber
 
-          gh release delete "$LATEST_TAG" --cleanup-tag --yes >/dev/null 2>&1 || true
-          gh release create "$LATEST_TAG" --target "$GITHUB_SHA" --title "SciCal600 Android APK · verified test build" --notes "$NOTES"
-          gh release upload "$LATEST_TAG" artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt --clobber
+          if gh release view "$ROLLING_TAG" >/dev/null 2>&1; then
+            # Keep the Release and channel tag in place: never delete/recreate
+            # the public Release. The immutable Release above is the fallback.
+            gh release upload "$ROLLING_TAG" \
+              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
+              --clobber
+            gh release edit "$ROLLING_TAG" \
+              --title 'SciCal600 Android APK · verified testing channel' \
+              --notes "$NOTES" --prerelease --latest=false
+          else
+            gh release create "$ROLLING_TAG" \
+              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
+              --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title 'SciCal600 Android APK · verified testing channel' --notes "$NOTES"
+          fi
+
+          test "$(gh release view "$ROLLING_TAG" --json isDraft --jq .isDraft)" = false
+          test "$(gh release view "$ROLLING_TAG" --json isPrerelease --jq .isPrerelease)" = true
+          VERIFY_DIR=$(mktemp -d)
+          trap 'rm -rf "$VERIFY_DIR"' EXIT
+          PUBLIC_BASE="https://github.com/${GITHUB_REPOSITORY}/releases/download/${ROLLING_TAG}"
+          VERIFIED=false
+          for attempt in 1 2 3 4 5; do
+            rm -f "$VERIFY_DIR/SciCal600-debug.apk" "$VERIFY_DIR/SHA256SUMS"
+            if curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                "$PUBLIC_BASE/SciCal600-debug.apk?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                --output "$VERIFY_DIR/SciCal600-debug.apk" \
+              && curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                "$PUBLIC_BASE/SHA256SUMS?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                --output "$VERIFY_DIR/SHA256SUMS" \
+              && (cd "$VERIFY_DIR" && sha256sum -c SHA256SUMS) \
+              && test "$(stat -c '%s' "$VERIFY_DIR/SciCal600-debug.apk")" = "$APK_SIZE"; then
+              VERIFIED=true
+              break
+            fi
+            sleep $((attempt * 3))
+          done
+          test "$VERIFIED" = true
+          gh release view "$ROLLING_TAG" --json tagName,isDraft,isPrerelease,url

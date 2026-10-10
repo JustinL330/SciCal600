@@ -8,14 +8,28 @@ files:
   - package.json
 asar: true
 npmRebuild: false
-artifactName: SciCal600-${os}-${arch}.${ext}
 win:
   target:
+    - target: nsis
+      arch:
+        - x64
     - target: portable
       arch:
         - x64
+nsis:
+  artifactName: SciCal600-Windows-${version}-${arch}-Setup.${ext}
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+portable:
+  artifactName: SciCal600-Windows-${version}-${arch}-Portable.${ext}
 mac:
+  artifactName: SciCal600-macOS-${version}-${arch}.${ext}
   target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
     - target: zip
       arch:
         - x64

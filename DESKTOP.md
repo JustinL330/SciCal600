@@ -30,7 +30,8 @@ With Node.js 22 or newer:
 ```text
 npm ci
 npm test
-npm run desktop:build
+npm run desktop:pack -- --publish never
+npm run test:desktop
 ```
 
 The current platform's packages are written to `release/`. CI builds Windows

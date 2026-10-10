@@ -3,7 +3,6 @@ name: Desktop and iOS clients
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -12,7 +11,7 @@ permissions:
 
 concurrency:
   group: clients-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   validate:
@@ -52,7 +51,7 @@ jobs:
       - run: npm run desktop:prepare
       - name: Package desktop app
         shell: bash
-        run: cd .desktop-build && npx --yes electron-builder@26.15.3 --config electron-builder.yml ${{ matrix.build_arg }} --publish never
+        run: cd .desktop-build && ../node_modules/.bin/electron-builder --config electron-builder.yml ${{ matrix.build_arg }} --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
@@ -71,8 +70,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Install matching Capacitor iOS platform
-        run: npm install --no-save --no-audit --no-fund @capacitor/ios@7.4.3
       - run: npm run ios:sync
       - name: Build unsigned iOS Simulator app
         run: |
@@ -144,11 +141,3 @@ jobs:
           gh release view "$RELEASE_TAG" >/dev/null 2>&1 || \
             gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" $PRERELEASE --title "$TITLE" --notes "Automated SciCal600 client builds. macOS and Windows packages are unsigned. The iOS asset is an unsigned Simulator build; physical iPhone/iPad installation requires Apple code signing. Android builds are published by the Android workflow."
           gh release upload "$RELEASE_TAG" publish-assets/* --clobber
-
-          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-            LATEST_TAG="client-latest"
-            LATEST_NOTES="Latest automated SciCal600 desktop and iOS test builds from main. Windows and macOS packages are unsigned. The iOS asset is for Simulator use; normal iPhone/iPad installation requires Apple code signing."
-            gh release delete "$LATEST_TAG" --cleanup-tag --yes >/dev/null 2>&1 || true
-            gh release create "$LATEST_TAG" --target "$GITHUB_SHA" --title "SciCal600 desktop & iOS · latest test builds" --notes "$LATEST_NOTES"
-            gh release upload "$LATEST_TAG" publish-assets/* --clobber
-          fi

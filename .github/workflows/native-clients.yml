@@ -3,13 +3,12 @@ on:
   pull_request:
   push:
     branches: [main, chore/brand-independent-native-clients]
-    tags: ['v*']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: native-clients-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   migrate-and-test:
     runs-on: ubuntu-latest
@@ -23,7 +22,7 @@ jobs:
       - name: Apply independence migration
         run: node scripts/project-migration.mjs
       - name: Add native build dependencies
-        run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.0.12 @capacitor/ios@7.4.3
+        run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
       - name: Commit generated migration on migration branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/chore/brand-independent-native-clients'
         run: |
@@ -56,7 +55,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/project-migration.mjs
-      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.0.12 @capacitor/ios@7.4.3
+      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
       - run: npm ci --no-audit --no-fund
       - run: npm run desktop:pack -- --win portable --x64 --publish never
       - uses: actions/upload-artifact@v4
@@ -74,7 +73,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/project-migration.mjs
-      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.0.12 @capacitor/ios@7.4.3
+      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
       - run: npm ci --no-audit --no-fund
       - run: npm run desktop:pack -- --mac zip --x64 --arm64 --publish never
       - uses: actions/upload-artifact@v4
@@ -92,9 +91,8 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/project-migration.mjs
-      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.0.12 @capacitor/ios@7.4.3
+      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
       - run: npm ci --no-audit --no-fund
-      - run: npm install --no-save --no-audit --no-fund @capacitor/ios@7.4.3
       - run: npm run ios:sync
       - name: Build iOS simulator app
         run: |
@@ -141,14 +139,9 @@ jobs:
         run: |
           set -euo pipefail
           TAG="native-dev-${GITHUB_SHA:0:12}"
-          LATEST_TAG="native-dev-latest"
           NOTES='Development builds sharing the SciCal600 calculation core. Windows is not commercially code-signed and may trigger SmartScreen. macOS is not Developer ID signed/notarized and may require Gatekeeper approval. iOS includes a Simulator build and an unsigned device archive; physical-device IPA installation requires Apple signing/provisioning. Android development APKs are published by the Android workflow.'
           mapfile -d '' RELEASE_FILES < <(find artifacts -maxdepth 2 -type f -print0)
           test "${#RELEASE_FILES[@]}" -gt 0
 
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "SciCal600 native development builds (${GITHUB_SHA:0:12})" --notes "$NOTES"
           gh release upload "$TAG" "${RELEASE_FILES[@]}" --clobber
-
-          gh release delete "$LATEST_TAG" --cleanup-tag --yes >/dev/null 2>&1 || true
-          gh release create "$LATEST_TAG" --target "$GITHUB_SHA" --prerelease --title "SciCal600 native development builds · latest" --notes "$NOTES"
-          gh release upload "$LATEST_TAG" "${RELEASE_FILES[@]}" --clobber

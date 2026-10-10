@@ -12,16 +12,23 @@
     "android:debug": "npm run android:sync && node scripts/build-android.mjs",
     "ios:sync": "npm run build && node scripts/prepare-ios.mjs",
     "desktop:prepare": "npm run build && node scripts/prepare-desktop.mjs",
-    "test:browser": "node tests/mobile-ui.browser.cjs",
+    "test:browser": "npm run build && node tests/mobile-ui.browser.cjs",
+    "test:desktop": "node tests/desktop-smoke.cjs",
     "desktop:pack": "npm run build && electron-builder --config electron-builder.yml"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   },
   "dependencies": {
     "@capacitor/core": "8.5.2",
-    "@capacitor/android": "7.4.3",
+    "@capacitor/android": "8.5.2",
     "@capacitor/app": "8.1.1"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.2",
+    "@capacitor/ios": "8.5.2",
+    "electron": "44.3.0",
+    "electron-builder": "26.17.0",
     "esbuild": "0.28.2",
     "playwright": "1.63.0"
   },

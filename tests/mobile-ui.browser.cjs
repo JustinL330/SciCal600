@@ -9,7 +9,7 @@ const playwrightModule = process.env.SCICAL_PLAYWRIGHT_MODULE || "playwright";
 const { chromium } = require(playwrightModule);
 const projectRoot = path.resolve(__dirname, "..");
 const root = path.join(projectRoot, "dist");
-const chromePath = process.env.SCICAL_CHROME_PATH || chromium.executablePath();
+const chromePath = process.env.SCICAL_CHROME_PATH;
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -157,10 +157,72 @@ async function checkCompactHome(page, viewport) {
   assert.equal(metrics.cardCount, 4, `${viewport.name}: all four calculator choices should be present`);
   assert.equal(metrics.buttonCount, 4, `${viewport.name}: all four calculator choices should have direct actions`);
   assert.ok(metrics.cardBottoms.every((bottom) => bottom <= metrics.innerHeight), `${viewport.name}: all four calculator choices should be visible without scrolling`);
-  assert.ok(metrics.buttonHeights.every((height) => height >= 44), `${viewport.name}: home actions should have mobile touch targets`);
+  assert.ok(metrics.buttonHeights.every((height) => height >= 44), `${viewport.name}: home actions should have mobile touch targets (${metrics.buttonHeights.join(", ")}px)`);
   assert.ok(metrics.documentWidth <= metrics.innerWidth, `${viewport.name}: home page horizontal overflow`);
   assert.equal(metrics.removedCopyCount, 0, `${viewport.name}: redundant home-page copy should be removed`);
   return metrics;
+}
+
+async function checkLanguagePersistence(page) {
+  const localeExpectations = {
+    "en-GB": { hero: /Maths/i, download: /Verified testing build/, native: /Downloads and platform limits/ },
+    "zh-Hant": { hero: /實用數學/, download: /已驗證測試版/, native: /下載與平台限制/ },
+    "zh-Hans": { hero: /实用数学/, download: /已验证测试版/, native: /下载与平台限制/ },
+    ja: { hero: /数学ツール/, download: /検証済みテスト版/, native: /ダウンロード/ },
+    ko: { hero: /수학 도구/, download: /검증된 테스트 빌드/, native: /다운로드/ },
+    ms: { hero: /Alat matematik/, download: /binaan ujian disahkan/i, native: /Muat turun/ },
+    fr: { hero: /maths/i, download: /version de test vérifiée/i, native: /Téléchargements/ },
+    de: { hero: /Mathematik/, download: /geprüfte Testversion/i, native: /Downloads/ },
+    es: { hero: /Matemáticas/, download: /versión de prueba verificada/i, native: /Descargas/ },
+    ar: { hero: /رياضيات/, download: /إصدار اختباري/, native: /التنزيلات/ },
+    th: { hero: /คณิตศาสตร์/, download: /รุ่นทดสอบ/, native: /ไฟล์ดาวน์โหลด/ },
+    "yue-Hant-HK": { hero: /搞掂/, download: /已驗證測試版/, native: /下載同平台限制/ },
+  };
+
+  await page.goto("/", { waitUntil: "networkidle" });
+  assert.equal(await page.locator("html").getAttribute("lang"), "ja", "browser Japanese should be used before a manual choice");
+
+  await page.locator("#language-select").selectOption("en-GB");
+  assert.equal(await page.evaluate(() => localStorage.getItem("scical600.language")), "en-GB", "manual English choice should be persisted");
+  const englishSurface = await page.locator('[data-view-panel="about"] [data-i18n]').allTextContents();
+  assert.doesNotMatch(englishSurface.join(" "), /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\u0e00-\u0e7f\u0600-\u06ff]/, "English about page should not retain CJK, Korean, Thai or Arabic prose");
+  assert.match(await page.locator(".android-download").getAttribute("aria-label"), /Download the verified Android testing APK/);
+
+  await page.locator('[data-view-target="linear-algebra"]').first().click();
+  assert.equal(await page.locator("html").getAttribute("lang"), "en-GB", "route changes should preserve the manual locale");
+  await page.reload({ waitUntil: "networkidle" });
+  assert.equal(await page.locator("html").getAttribute("lang"), "en-GB", "reload should preserve the manual locale");
+  assert.equal(new URL(page.url()).pathname, "/linear-algebra", "reload should preserve the route while restoring locale");
+
+  await page.goto("/about", { waitUntil: "networkidle" });
+  assert.equal(await page.locator("html").getAttribute("lang"), "en-GB", "formal routes should respect the saved locale");
+  await page.evaluate(() => localStorage.setItem("scical600.language", "ja"));
+  await page.reload({ waitUntil: "networkidle" });
+  assert.equal(await page.locator("html").getAttribute("lang"), "ja", "a pre-existing Japanese choice should load from storage");
+  await page.locator("#language-select").selectOption("en-GB");
+  await page.reload({ waitUntil: "networkidle" });
+  assert.equal(await page.locator("html").getAttribute("lang"), "en-GB", "manual English should override stored Japanese after reload");
+
+  for (const [language, expected] of Object.entries(localeExpectations)) {
+    await page.locator("#language-select").selectOption(language);
+    const releaseDictionary = await page.evaluate((selected) => {
+      const dictionary = window.SciCalAdditionalLocales?.[selected] || {};
+      return Object.fromEntries(Object.entries(dictionary).filter(([key]) => key.startsWith("android") || key.startsWith("native")));
+    }, language);
+    assert.equal(await page.locator("html").getAttribute("lang"), language, `${language} language selection`);
+    assert.equal(await page.locator("html").getAttribute("dir"), language === "ar" ? "rtl" : "ltr", `${language} writing direction`);
+    assert.match(await page.locator('[data-view-panel="about"] h1').textContent(), expected.hero, `${language} hero`);
+    assert.match(await page.locator('[data-i18n="androidDownload"]').textContent(), expected.download, `${language} Android label`);
+    assert.match(await page.locator('[data-i18n="nativeAvailabilityTitle"]').textContent(), expected.native, `${language} native availability title`);
+    assert.equal(await page.locator(".android-download").getAttribute("aria-label"), releaseDictionary.androidDownloadAria, `${language} Android download aria-label`);
+    for (const key of [
+      "androidDownload", "androidReleaseDetails", "androidChecksum", "androidFileSize", "androidDownloadDisclosure",
+      "nativeAvailabilityEyebrow", "nativeAvailabilityTitle", "nativeAvailabilityIntro",
+      "nativeAndroidDescription", "nativeWindowsDescription", "nativeMacosDescription", "nativeIosDescription",
+    ]) {
+      assert.equal((await page.locator(`[data-i18n="${key}"]`).textContent()).trim(), releaseDictionary[key], `${language} ${key}`);
+    }
+  }
 }
 
 async function runFunctionalChecks(page) {
@@ -426,7 +488,12 @@ async function runFunctionalChecks(page) {
 (async () => {
   const server = await startServer();
   const address = server.address();
-  const browser = await chromium.launch({ headless: true, executablePath: chromePath });
+  // Let Playwright select its compatible bundled headless executable by
+  // default. CI callers can still supply a deliberate browser override.
+  const browser = await chromium.launch({
+    headless: true,
+    ...(chromePath ? { executablePath: chromePath } : {}),
+  });
   const viewports = [
     { name: "iPhone 13", width: 390, height: 844 },
     { name: "iPhone 15", width: 393, height: 852 },
@@ -448,6 +515,17 @@ async function runFunctionalChecks(page) {
       console.log("PASS existing UI smoke test");
       await context.close();
     }
+    {
+      const context = await browser.newContext({
+        baseURL: `http://127.0.0.1:${address.port}`,
+        locale: "ja-JP",
+        reducedMotion: "reduce",
+      });
+      const page = await context.newPage();
+      await checkLanguagePersistence(page);
+      console.log("PASS twelve-language Android/native content and manual locale persistence");
+      await context.close();
+    }
     for (const viewport of viewports) {
       const context = await browser.newContext({
         baseURL: `http://127.0.0.1:${address.port}`,
@@ -455,6 +533,7 @@ async function runFunctionalChecks(page) {
         deviceScaleFactor: 3,
         hasTouch: true,
         isMobile: true,
+        reducedMotion: "reduce",
         userAgent: viewport.name.startsWith("Xiaomi")
           ? "Mozilla/5.0 (Linux; Android 15; 23127PN0CC) AppleWebKit/537.36 Chrome/140 Mobile Safari/537.36"
           : "Mozilla/5.0 (iPhone; CPU iPhone OS 19_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
@@ -473,7 +552,7 @@ async function runFunctionalChecks(page) {
       if (viewport.name === "iPhone 16/17 Pro") await runFunctionalChecks(page);
       await context.close();
     }
-    console.log("PASS touch feedback, modes 02–06, direct routes, six added languages, and Linear Algebra UI");
+    console.log("PASS touch feedback, modes 02–06, direct routes, twelve-language release UI, and Linear Algebra UI");
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

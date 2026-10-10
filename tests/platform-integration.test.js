@@ -23,7 +23,7 @@ function loadAdditionalLocales() {
   };
 }
 
-test("ships complete calculator translation key sets for all languages", () => {
+test("resolves every calculator translation key for all languages", () => {
   for (const [file, name] of [["linear-algebra-i18n.js","SciCalLinearTranslations"],["computer-i18n.js","SciCalComputerTranslations"],["economics-i18n.js","SciCalEconomicsTranslations"]]) {
     const dictionaries = loadTranslations(file, name);
     assert.deepEqual(Object.keys(dictionaries).sort(), ["ar","de","en-GB","es","fr","ja","ko","ms","zh-Hans","zh-Hant"].sort());
@@ -55,13 +55,40 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   assert.match(html, /<option value="th">🇹🇭 ไทย<\/option>/);
   assert.match(html, /<option value="yue-Hant-HK">🇭🇰 粵語<\/option>/);
   assert.match(html, /data-i18n="aboutTitle">Maths made simple<\/h1>/);
+  assert.match(html, /releases\/download\/android-debug-latest\/SciCal600-debug\.apk/);
+  assert.match(html, /releases\/tag\/android-debug-latest/);
+  assert.match(html, /data-i18n="androidDownload">Android APK · Verified testing build<\/span>/);
+  assert.match(html, /data-i18n-aria="androidDownloadAria"/);
+  assert.doesNotMatch(html, /fonts\.googleapis\.com|fonts\.gstatic\.com/, "native clients must not depend on remote font stylesheets");
+  for (const key of [
+    "nativeAvailabilityEyebrow", "nativeAvailabilityTitle", "nativeAvailabilityIntro",
+    "nativeAndroidDescription", "nativeWindowsDescription", "nativeMacosDescription", "nativeIosDescription",
+  ]) {
+    assert.match(html, new RegExp(`data-i18n="${key}"`), `${key} is declared in static HTML`);
+  }
+  assert.doesNotMatch(html, /已验证测试版|原生客户端状态|下载与平台限制/);
 });
 
-test("adds localized Android download labels plus substantial Thai and Hong Kong Cantonese overlays", () => {
+test("localizes the Android download and native availability content in all twelve languages", () => {
   const { locales, manuals } = loadAdditionalLocales();
   assert.deepEqual(Object.keys(locales).sort(), ["ar","de","en-GB","es","fr","ja","ko","ms","th","yue-Hant-HK","zh-Hans","zh-Hant"].sort());
-  for (const language of Object.keys(locales)) {
-    assert.match(locales[language].androidDownload, /Android|APK/);
+  const requiredKeys = [
+    "androidDownload", "androidDownloadAria", "androidReleaseDetails", "androidChecksum", "androidFileSize",
+    "androidDownloadDisclosure", "nativeAvailabilityEyebrow", "nativeAvailabilityTitle", "nativeAvailabilityIntro",
+    "nativeAndroidDescription", "nativeWindowsDescription", "nativeMacosDescription", "nativeIosDescription",
+  ];
+  for (const [language, dictionary] of Object.entries(locales)) {
+    for (const key of requiredKeys) {
+      assert.equal(Object.hasOwn(dictionary, key), true, `${language}.${key} should be explicit`);
+      assert.equal(typeof dictionary[key], "string", `${language}.${key} should be text`);
+      assert.ok(dictionary[key].trim(), `${language}.${key} should not be empty`);
+    }
+    assert.match(dictionary.androidDownload, /Android|APK/);
+    assert.doesNotMatch(dictionary.androidDownload, /↓/, `${language} label should not contain the decorative arrow`);
+    if (language !== "en-GB") {
+      assert.notEqual(dictionary.nativeAvailabilityTitle, locales["en-GB"].nativeAvailabilityTitle, `${language} native title should not fall back to English`);
+      assert.notEqual(dictionary.nativeAndroidDescription, locales["en-GB"].nativeAndroidDescription, `${language} Android disclosure should not fall back to English`);
+    }
   }
   assert.equal(locales.th.fallback, "en-GB");
   assert.equal(locales["yue-Hant-HK"].fallback, "zh-Hant");
@@ -71,6 +98,98 @@ test("adds localized Android download labels plus substantial Thai and Hong Kong
   assert.match(locales["yue-Hant-HK"].matrixSwap, /同/);
   assert.ok(manuals.th.length >= 5);
   assert.ok(manuals["yue-Hant-HK"].length >= 5);
+});
+
+test("keeps locale composition static and preserves the existing dictionaries", () => {
+  const siteUi = read("site-ui.js");
+  const overlays = read("additional-locales.js");
+  assert.match(siteUi, /ui\[language\] = \{ \.\.\.ui\[fallback\], \.\.\.\(ui\[language\] \|\| \{\}\), \.\.\.dictionary \}/);
+  assert.doesNotMatch(overlays, /querySelector\("\.android-download"\)|androidDownload\.href/);
+});
+
+test("keeps both desktop packaging paths on the same isolated app protocol shell", () => {
+  const desktopMain = read("desktop/main.cjs");
+  const stagedMain = read("native/desktop/main.cjs");
+  const releaseConfig = read("electron-builder.yml");
+  const stagedConfig = read("native/desktop/electron-builder.yml");
+  assert.equal(
+    stagedMain.replace(/\r\n/g, "\n"),
+    desktopMain.replace(/\r\n/g, "\n"),
+    "root and staged desktop shells must stay identical",
+  );
+  assert.match(desktopMain, /registerSchemesAsPrivileged/);
+  assert.match(desktopMain, /protocol\.handle\("app"/);
+  assert.match(desktopMain, /APP_HOST = "scical600\.local"/);
+  assert.ok(desktopMain.includes('const APP_ORIGIN = `app://${APP_HOST}`;'));
+  assert.match(desktopMain, /contextIsolation: true/);
+  assert.match(desktopMain, /nodeIntegration: false/);
+  assert.match(desktopMain, /sandbox: true/);
+  assert.match(desktopMain, /setPermissionRequestHandler/);
+  assert.match(desktopMain, /EXTERNAL_ORIGINS/);
+  assert.doesNotMatch(desktopMain, /loadFile\(/);
+  assert.match(stagedConfig, /electronVersion: 44\.3\.0/);
+  assert.match(releaseConfig, /target: nsis/);
+  assert.match(releaseConfig, /target: portable/);
+  assert.match(releaseConfig, /target: dmg/);
+  assert.match(releaseConfig, /target: zip/);
+  assert.match(releaseConfig, /artifactName: SciCal600-Windows-\$\{version\}-\$\{arch\}-Setup\.\$\{ext\}/);
+  assert.match(releaseConfig, /artifactName: SciCal600-Windows-\$\{version\}-\$\{arch\}-Portable\.\$\{ext\}/);
+  assert.match(releaseConfig, /artifactName: SciCal600-macOS-\$\{version\}-\$\{arch\}\.\$\{ext\}/);
+});
+
+test("keeps the multi-platform preview asset contract synchronized", () => {
+  const config = read("electron-builder.yml");
+  const desktopWorkflow = read(".github/workflows/desktop.yml");
+  const releaseWorkflow = read(".github/workflows/multiplatform-release.yml");
+  const expected = [
+    "SciCal600-Windows-${RELEASE_VERSION}-x64-Setup.exe",
+    "SciCal600-Windows-${RELEASE_VERSION}-x64-Portable.exe",
+    "SciCal600-macOS-${RELEASE_VERSION}-x64.dmg",
+    "SciCal600-macOS-${RELEASE_VERSION}-x64.zip",
+    "SciCal600-macOS-${RELEASE_VERSION}-arm64.dmg",
+    "SciCal600-macOS-${RELEASE_VERSION}-arm64.zip",
+  ];
+  assert.match(desktopWorkflow, /command: --win --x64/);
+  assert.match(desktopWorkflow, /command: --mac --x64/);
+  assert.match(desktopWorkflow, /command: --mac --arm64/);
+  assert.match(config, /target: nsis/);
+  assert.match(config, /target: portable/);
+  assert.match(config, /target: dmg/);
+  assert.match(config, /target: zip/);
+  for (const asset of expected) {
+    assert.ok(releaseWorkflow.includes(`test -f "publish/${asset}"`), `${asset} preview contract`);
+  }
+  assert.match(releaseWorkflow, /test "\$\(wc -l < publish\/SHA256SUMS\.txt\)" -eq 9/);
+});
+
+test("keeps the rolling Android testing Release public, prerelease and non-destructive", () => {
+  const workflow = read(".github/workflows/android.yml");
+  const clientWorkflows = [
+    read(".github/workflows/clients.yml"),
+    read(".github/workflows/native-clients.yml"),
+  ].join("\n");
+  const iosWorkflow = read(".github/workflows/ios.yml");
+  const manifest = JSON.parse(read("package.json"));
+  assert.equal(manifest.dependencies["@capacitor/android"], "8.5.2");
+  assert.equal(manifest.devDependencies["@capacitor/ios"], "8.5.2");
+  assert.equal(manifest.devDependencies["electron-builder"], "26.17.0");
+  assert.equal(manifest.engines.node, ">=22.12.0");
+  assert.match(workflow, /npm audit --audit-level=high/);
+  assert.doesNotMatch(workflow, /npm audit[^\n]*--omit=dev/);
+  assert.match(workflow, /ROLLING_TAG="android-debug-latest"/);
+  assert.match(workflow, /IMMUTABLE_TAG="android-debug-\$\{GITHUB_SHA:0:12\}"/);
+  assert.match(workflow, /gh release (?:create|edit) "\$ROLLING_TAG"[\s\S]*--prerelease --latest=false/);
+  assert.match(workflow, /gh release upload "\$ROLLING_TAG"[\s\S]*--clobber/);
+  assert.match(workflow, /curl --fail --location[\s\S]*SciCal600-debug\.apk/);
+  assert.match(workflow, /fixed download tag; that tag is not the asset source revision/);
+  assert.match(workflow, /Immutable audit Release:/);
+  assert.doesNotMatch(workflow, /gh release delete "\$(?:ROLLING_TAG|LATEST_TAG)"/);
+  assert.doesNotMatch(workflow, /gh release edit "\$ROLLING_TAG"[\s\S]{0,200}--target/);
+  assert.doesNotMatch(clientWorkflows, /gh release delete "\$LATEST_TAG"/);
+  assert.doesNotMatch(clientWorkflows, /LATEST_TAG=/);
+  for (const standalone of [workflow, clientWorkflows, iosWorkflow]) {
+    assert.doesNotMatch(standalone, /tags:\s*\[['"]v\*['"]\]/, "standalone platform workflows must not publish competing stable v* Releases");
+  }
 });
 
 test("does not ship known client-side secret patterns", () => {
