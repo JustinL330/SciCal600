@@ -176,6 +176,8 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   assert.equal(manifest.engines.node, ">=22.12.0");
   assert.match(workflow, /npm audit --audit-level=high/);
   assert.doesNotMatch(workflow, /npm audit[^\n]*--omit=dev/);
+  assert.match(workflow, /node tests\/android-smoke\.cjs \|\| \(adb logcat/);
+  assert.doesNotMatch(workflow, /if ! node tests\/android-smoke\.cjs; then/, "emulator-runner executes script lines independently");
   assert.match(workflow, /ROLLING_TAG="android-debug-latest"/);
   assert.match(workflow, /IMMUTABLE_TAG="android-debug-\$\{GITHUB_SHA:0:12\}"/);
   assert.match(workflow, /gh release (?:create|edit) "\$ROLLING_TAG"[\s\S]*--prerelease --latest=false/);

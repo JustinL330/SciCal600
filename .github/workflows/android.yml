@@ -86,11 +86,7 @@ jobs:
             adb shell am force-stop io.github.justinfromhkg.scical600
             adb shell am start -W -n io.github.justinfromhkg.scical600/.MainActivity
             adb shell pidof io.github.justinfromhkg.scical600
-            if ! node tests/android-smoke.cjs; then
-              adb logcat -d > artifacts/android-logcat.txt || true
-              adb shell dumpsys activity activities > artifacts/android-activity.txt || true
-              exit 1
-            fi
+            node tests/android-smoke.cjs || (adb logcat -d > artifacts/android-logcat.txt; adb shell dumpsys activity activities > artifacts/android-activity.txt; exit 1)
       - name: Upload Android smoke evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
