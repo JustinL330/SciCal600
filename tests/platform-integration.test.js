@@ -187,6 +187,8 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   assert.doesNotMatch(workflow, /gh release edit "\$ROLLING_TAG"[\s\S]{0,200}--target/);
   assert.doesNotMatch(clientWorkflows, /gh release delete "\$LATEST_TAG"/);
   assert.doesNotMatch(clientWorkflows, /LATEST_TAG=/);
+  assert.doesNotMatch(clientWorkflows, /npm install --save-dev --package-lock-only/, "client CI must consume the committed lockfile without rewriting exact versions");
+  assert.doesNotMatch(clientWorkflows, /project-migration/, "client CI must build the reviewed sources without rewriting them first");
   for (const standalone of [workflow, clientWorkflows, iosWorkflow]) {
     assert.doesNotMatch(standalone, /tags:\s*\[['"]v\*['"]\]/, "standalone platform workflows must not publish competing stable v* Releases");
   }

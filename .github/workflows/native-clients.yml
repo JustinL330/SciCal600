@@ -2,7 +2,7 @@ name: Native clients
 on:
   pull_request:
   push:
-    branches: [main, chore/brand-independent-native-clients]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -12,30 +12,11 @@ concurrency:
 jobs:
   migrate-and-test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      - name: Apply independence migration
-        run: node scripts/project-migration.mjs
-      - name: Add native build dependencies
-        run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
-      - name: Commit generated migration on migration branch
-        if: github.event_name == 'push' && github.ref == 'refs/heads/chore/brand-independent-native-clients'
-        run: |
-          set -euo pipefail
-          if git diff --quiet -- README.md index.html additional-locales.js package.json package-lock.json; then
-            echo 'Migration already committed.'
-          else
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add README.md index.html additional-locales.js package.json package-lock.json
-            git commit -m 'Refresh SciCal600 native availability disclosures'
-            git push origin HEAD:chore/brand-independent-native-clients
-          fi
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Verify brand independence
@@ -54,8 +35,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      - run: node scripts/project-migration.mjs
-      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
       - run: npm ci --no-audit --no-fund
       - run: npm run desktop:pack -- --win portable --x64 --publish never
       - uses: actions/upload-artifact@v4
@@ -72,8 +51,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      - run: node scripts/project-migration.mjs
-      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
       - run: npm ci --no-audit --no-fund
       - run: npm run desktop:pack -- --mac zip --x64 --arm64 --publish never
       - uses: actions/upload-artifact@v4
@@ -90,8 +67,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      - run: node scripts/project-migration.mjs
-      - run: npm install --save-dev --package-lock-only electron@44.3.0 electron-builder@26.17.0 @capacitor/ios@8.5.2
       - run: npm ci --no-audit --no-fund
       - run: npm run ios:sync
       - name: Build iOS simulator app
