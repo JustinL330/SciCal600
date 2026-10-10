@@ -164,6 +164,7 @@ test("keeps the multi-platform preview asset contract synchronized", () => {
 
 test("keeps the rolling Android testing Release public, prerelease and non-destructive", () => {
   const workflow = read(".github/workflows/android.yml");
+  const androidSmoke = read("tests/android-smoke.cjs");
   const clientWorkflows = [
     read(".github/workflows/clients.yml"),
     read(".github/workflows/native-clients.yml"),
@@ -176,6 +177,8 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   assert.equal(manifest.engines.node, ">=22.12.0");
   assert.match(workflow, /npm audit --audit-level=high/);
   assert.doesNotMatch(workflow, /npm audit[^\n]*--omit=dev/);
+  assert.match(androidSmoke, /device\.shell\('input keyevent KEYCODE_BACK'\)/, "Back smoke uses the selected device's ADB connection");
+  assert.doesNotMatch(androidSmoke, /device\.input\.press/, "Back smoke must not require Playwright's optional Android driver APKs");
   assert.match(workflow, /node tests\/android-smoke\.cjs \|\| \(adb logcat/);
   assert.doesNotMatch(workflow, /if ! node tests\/android-smoke\.cjs; then/, "emulator-runner executes script lines independently");
   assert.match(workflow, /ROLLING_TAG="android-debug-latest"/);
@@ -183,6 +186,13 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   assert.match(workflow, /gh release (?:create|edit) "\$ROLLING_TAG"[\s\S]*--prerelease --latest=false/);
   assert.match(workflow, /gh release upload "\$ROLLING_TAG"[\s\S]*--clobber/);
   assert.match(workflow, /curl --fail --location[\s\S]*SciCal600-debug\.apk/);
+  assert.match(workflow, /--connect-timeout 15 --max-time 120/);
+  assert.match(workflow, /sha256sum "\$destination\/SciCal600-debug\.apk"[\s\S]*= "\$APK_SHA256"/);
+  assert.match(workflow, /cmp -s "\$destination\/SHA256SUMS" artifacts\/SHA256SUMS/);
+  assert.ok(
+    workflow.indexOf('verify_public_release "$IMMUTABLE_TAG"') < workflow.indexOf('gh release upload "$ROLLING_TAG"'),
+    "the immutable public fallback is verified before rolling assets are replaced",
+  );
   assert.match(workflow, /fixed download tag; that tag is not the asset source revision/);
   assert.match(workflow, /Immutable audit Release:/);
   assert.doesNotMatch(workflow, /gh release delete "\$(?:ROLLING_TAG|LATEST_TAG)"/);

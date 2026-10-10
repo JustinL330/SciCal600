@@ -210,15 +210,49 @@ jobs:
             artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
             --clobber
 
+          VERIFY_DIR=$(mktemp -d)
+          trap 'rm -rf "$VERIFY_DIR"' EXIT
+          verify_public_release() {
+            local tag="$1"
+            local destination="$VERIFY_DIR/$tag"
+            local public_base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
+            local verified=false
+            mkdir -p "$destination"
+            for attempt in 1 2 3 4 5; do
+              rm -f "$destination/SciCal600-debug.apk" "$destination/SHA256SUMS"
+              if curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                  --connect-timeout 15 --max-time 120 \
+                  "$public_base/SciCal600-debug.apk?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                  --output "$destination/SciCal600-debug.apk" \
+                && curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                  --connect-timeout 15 --max-time 120 \
+                  "$public_base/SHA256SUMS?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                  --output "$destination/SHA256SUMS" \
+                && test "$(sha256sum "$destination/SciCal600-debug.apk" | awk '{print $1}')" = "$APK_SHA256" \
+                && cmp -s "$destination/SHA256SUMS" artifacts/SHA256SUMS \
+                && test "$(stat -c '%s' "$destination/SciCal600-debug.apk")" = "$APK_SIZE"; then
+                verified=true
+                break
+              fi
+              sleep $((attempt * 3))
+            done
+            test "$verified" = true
+          }
+
+          # Confirm the immutable fallback is publicly available and byte-for-byte
+          # identical before changing any rolling-channel metadata or assets.
+          verify_public_release "$IMMUTABLE_TAG"
+
           if gh release view "$ROLLING_TAG" >/dev/null 2>&1; then
             # Keep the Release and channel tag in place: never delete/recreate
-            # the public Release. The immutable Release above is the fallback.
-            gh release upload "$ROLLING_TAG" \
-              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
-              --clobber
+            # the public Release. Publish the verified immutable fallback in its
+            # notes before replacing any mutable assets.
             gh release edit "$ROLLING_TAG" \
               --title 'SciCal600 Android APK · verified testing channel' \
               --notes "$NOTES" --prerelease --latest=false
+            gh release upload "$ROLLING_TAG" \
+              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
+              --clobber
           else
             gh release create "$ROLLING_TAG" \
               artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
@@ -228,24 +262,5 @@ jobs:
 
           test "$(gh release view "$ROLLING_TAG" --json isDraft --jq .isDraft)" = false
           test "$(gh release view "$ROLLING_TAG" --json isPrerelease --jq .isPrerelease)" = true
-          VERIFY_DIR=$(mktemp -d)
-          trap 'rm -rf "$VERIFY_DIR"' EXIT
-          PUBLIC_BASE="https://github.com/${GITHUB_REPOSITORY}/releases/download/${ROLLING_TAG}"
-          VERIFIED=false
-          for attempt in 1 2 3 4 5; do
-            rm -f "$VERIFY_DIR/SciCal600-debug.apk" "$VERIFY_DIR/SHA256SUMS"
-            if curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
-                "$PUBLIC_BASE/SciCal600-debug.apk?run=$GITHUB_RUN_ID&attempt=$attempt" \
-                --output "$VERIFY_DIR/SciCal600-debug.apk" \
-              && curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
-                "$PUBLIC_BASE/SHA256SUMS?run=$GITHUB_RUN_ID&attempt=$attempt" \
-                --output "$VERIFY_DIR/SHA256SUMS" \
-              && (cd "$VERIFY_DIR" && sha256sum -c SHA256SUMS) \
-              && test "$(stat -c '%s' "$VERIFY_DIR/SciCal600-debug.apk")" = "$APK_SIZE"; then
-              VERIFIED=true
-              break
-            fi
-            sleep $((attempt * 3))
-          done
-          test "$VERIFIED" = true
+          verify_public_release "$ROLLING_TAG"
           gh release view "$ROLLING_TAG" --json tagName,isDraft,isPrerelease,url

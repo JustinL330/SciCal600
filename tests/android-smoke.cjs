@@ -21,7 +21,7 @@ const { _android: android } = require('playwright');
     assert.equal((await page.locator('#result').textContent()).trim(), '2', 'offline 1+1');
     const pressBackOnce = async (description, condition) => {
       const before = Number(await page.locator('html').getAttribute('data-android-back-events') || '0');
-      await device.input.press('Back');
+      await device.shell('input keyevent KEYCODE_BACK');
       await page.waitForFunction((previous) => Number(document.documentElement.dataset.androidBackEvents || '0') > previous, before);
       const after = Number(await page.locator('html').getAttribute('data-android-back-events') || '0');
       assert.equal(after, before + 1, `${description}: exactly one native Back event`);
