@@ -3,6 +3,8 @@ dist/
 android/
 ios/
 release/
+.desktop-build/
+client-artifacts/
 .cache/
 *.jks
 *.keystore

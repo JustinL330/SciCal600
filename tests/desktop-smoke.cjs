@@ -39,6 +39,11 @@ function findPackagedExecutable(root) {
     assert.equal(isolation.nodeRequire, 'undefined', 'Node require is not exposed');
     assert.equal(isolation.nodeProcess, 'undefined', 'Node process is not exposed');
     assert.deepEqual(isolation.remoteAssets, [], 'initial scripts and styles are local');
+    await page.evaluate(() => window.SciCalUI.showView('computer-calculator'));
+    await page.reload();
+    await page.waitForFunction(() => window.SciCalUI && document.documentElement.dataset.native === 'desktop');
+    assert.equal(new URL(page.url()).pathname, '/computer-calculator', 'app protocol reloads a direct workspace route');
+    assert.ok(await page.locator('[data-view-panel="computer-calculator"]').isVisible(), 'direct workspace survives reload');
     for (const view of ['calculator', 'linear-algebra', 'computer-calculator', 'economics-calculator']) {
       await page.evaluate((nextView) => window.SciCalUI.showView(nextView), view);
       assert.ok(await page.locator(`[data-view-panel="${view}"]`).isVisible(), `${view} opens`);

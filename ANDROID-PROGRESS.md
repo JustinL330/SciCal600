@@ -1,6 +1,6 @@
 # Android delivery checkpoint — audited
 
-The original Android implementation was merged through [PR #4](https://github.com/justinfromhkg/SciCal600/pull/4). This file records the last fully verified baseline before the multi-platform v0.4.0 upgrade; current downloads are listed on [GitHub Releases](https://github.com/justinfromhkg/SciCal600/releases).
+The original Android implementation was merged through [PR #4](https://github.com/justinfromhkg/SciCal600/pull/4). This file records the last fully verified baseline before the multi-platform v0.4.0 upgrade. New verified testing builds use the public [rolling Android prerelease](https://github.com/justinfromhkg/SciCal600/releases/tag/android-debug-latest); the immutable baseline below remains as historical evidence.
 
 ## Delivered APK
 

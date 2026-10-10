@@ -1,14 +1,24 @@
 # SciCal600 for Android / Android 版
 
 App ID: `io.github.justinfromhkg.scical600`. App name: **SciCal600**.
-Android 6+ with an up-to-date Android System WebView. Node 22, JDK 21 and Android SDK are used by CI.
+Android 7.0+ (API 24+) with an up-to-date Android System WebView. Node 22, JDK 21 and Android SDK are used by CI.
 
 ## Download / 下载
 
-[All Android and multi-platform downloads / 所有下载](https://github.com/justinfromhkg/SciCal600/releases)
+[Android testing Release / Android 测试版详情](https://github.com/justinfromhkg/SciCal600/releases/tag/android-debug-latest)
 
-Preview Releases contain an installable, development-signed APK. It is tested
+[Direct APK / 直接下载 APK](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/SciCal600-debug.apk) · [SHA-256](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/SHA256SUMS) · [file size / 文件大小](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/size.txt)
+
+[All Android and multi-platform Releases / 所有 Release](https://github.com/justinfromhkg/SciCal600/releases)
+
+The rolling `android-debug-latest` channel is a public **prerelease**, not the
+repository's production `Latest` release. It contains an installable,
+development-signed APK and publishes the source commit, exact file size and
+SHA-256 alongside the APK. It is tested
 in an Android 15 emulator but is not a production-signed Play Store build.
+The fixed rolling tag is a stable download address, not the source revision;
+the Release notes and `build-info.txt` link the exact commit and its immutable
+per-commit prerelease.
 Different development certificates may require uninstalling an older preview,
 which clears that app's local data. Android may ask permission to install from
 the download source.
@@ -59,6 +69,6 @@ CI 输出签名、包名、大小、SHA-256，并实际安装和离线启动；�
 
 ## Verified delivery / 已验证交付
 
-[Open current Releases / 打开当前下载](https://github.com/justinfromhkg/SciCal600/releases)
+[Open the rolling Android testing Release / 打开 Android 测试版](https://github.com/justinfromhkg/SciCal600/releases/tag/android-debug-latest)
 
 [Build, installation and SHA-256 report / 构建、安装与校验报告](ANDROID-PROGRESS.md)
