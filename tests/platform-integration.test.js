@@ -156,6 +156,8 @@ test("keeps the multi-platform preview asset contract synchronized", () => {
   assert.match(config, /target: portable/);
   assert.match(config, /target: dmg/);
   assert.match(config, /target: zip/);
+  assert.match(releaseWorkflow, /android:[\s\S]*permissions:\s*\n\s*contents: write[\s\S]*uses: \.\/\.github\/workflows\/android\.yml/);
+  assert.match(releaseWorkflow, /ios:[\s\S]*permissions:\s*\n\s*contents: write[\s\S]*uses: \.\/\.github\/workflows\/ios\.yml/);
   for (const asset of expected) {
     assert.ok(releaseWorkflow.includes(`test -f "publish/${asset}"`), `${asset} preview contract`);
   }

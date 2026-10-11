@@ -14,6 +14,10 @@ concurrency:
 jobs:
   android:
     name: Android audit and APK
+    # The reusable workflow contains a dormant production-release job with
+    # contents: write. GitHub validates that ceiling before evaluating its if.
+    permissions:
+      contents: write
     uses: ./.github/workflows/android.yml
 
   desktop:
@@ -22,6 +26,10 @@ jobs:
 
   ios:
     name: iOS packages
+    # The reusable workflow's production-signed v* job requests contents: write;
+    # this preview tag still skips that job and only emits unsigned artifacts.
+    permissions:
+      contents: write
     uses: ./.github/workflows/ios.yml
 
   release:
