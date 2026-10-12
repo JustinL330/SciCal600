@@ -1,14 +1,28 @@
 const assert = require('node:assert/strict');
 const { _android: android } = require('playwright');
+const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview-ready.cjs');
 (async () => {
   const [device] = await android.devices();
   assert.ok(device, 'Android emulator exists');
   try {
-    const webview = await device.webView({ pkg: 'io.github.justinfromhkg.scical600' });
-    const page = await webview.page();
+    // A fresh API 35 emulator reports boot complete before its final package
+    // and display-asset updates. Those updates can legitimately relaunch the
+    // foreground Activity and replace its WebView, so attach only after the
+    // short system-settling window. The override is useful for local devices.
+    const startupSettleMs = Number(process.env.ANDROID_SMOKE_SETTLE_MS || 20_000);
+    assert.ok(Number.isFinite(startupSettleMs) && startupSettleMs >= 0, 'valid Android startup settle time');
+    await new Promise(resolve => setTimeout(resolve, startupSettleMs));
+    await ensureAppWindowFocus(device, {
+      onRetry: ({ attempt, focus }) => {
+        console.warn(`Android focus attempt ${attempt} found a non-app window; restoring SciCal600: ${focus || 'unknown'}`);
+      },
+    });
+    const page = await attachStableAppPage(device, {
+      onRetry: ({ attempt, error, pid, processIds }) => {
+        console.warn(`Android startup WebView attempt ${attempt} (WebView pid ${pid || 'unknown'}, app pid ${processIds}) closed; reconnecting: ${error.message}`);
+      },
+    });
     assert.ok(page, 'offline WebView page exists');
-    await page.waitForFunction(() => window.SciCalUI && document.documentElement.dataset.native === 'android');
-    await page.waitForFunction(() => ['true', 'error'].includes(document.documentElement.dataset.androidBackReady));
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
     assert.deepEqual(external, [], 'all application scripts/styles are bundled locally');
