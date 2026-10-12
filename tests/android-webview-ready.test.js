@@ -6,6 +6,7 @@ const {
   ensureAppWindowFocus,
   focusedWindow,
   isTargetClosedError,
+  readFocusedWindow,
 } = require('./android-webview-ready.cjs');
 
 class FakeWebView extends EventEmitter {
@@ -154,6 +155,21 @@ test('extracts the current Android focus window', () => {
   assert.equal(focusedWindow('no focused window here'), '');
 });
 
+test('falls back to the activity-service focus on newer Android images', async () => {
+  const commands = [];
+  const device = {
+    async shell(command) {
+      commands.push(command);
+      return Buffer.from(command === 'dumpsys activity activities'
+        ? 'mCurrentFocus=Window{2 u0 io.github.justinfromhkg.scical600/MainActivity}'
+        : 'Window service without a current-focus line');
+    },
+  };
+
+  assert.match(await readFocusedWindow(device), /scical600/);
+  assert.deepEqual(commands, ['dumpsys window windows', 'dumpsys activity activities']);
+});
+
 test('dismisses a non-app overlay and verifies app focus before Back testing', async () => {
   const commands = [];
   const focusOutputs = [
@@ -163,7 +179,7 @@ test('dismisses a non-app overlay and verifies app focus before Back testing', a
   const device = {
     async shell(command) {
       commands.push(command);
-      return command === 'dumpsys window windows' ? Buffer.from(focusOutputs.shift()) : Buffer.from('');
+      return command === 'dumpsys activity activities' ? Buffer.from(focusOutputs.shift()) : Buffer.from('');
     },
   };
 
@@ -172,16 +188,18 @@ test('dismisses a non-app overlay and verifies app focus before Back testing', a
   assert.match(focus, /scical600/);
   assert.deepEqual(commands, [
     'dumpsys window windows',
+    'dumpsys activity activities',
     'input keyevent KEYCODE_BACK',
     'am start -W -n io.github.justinfromhkg.scical600/.MainActivity',
     'dumpsys window windows',
+    'dumpsys activity activities',
   ]);
 });
 
 test('fails when the app cannot obtain Android window focus', async () => {
   const device = {
     async shell(command) {
-      return Buffer.from(command === 'dumpsys window windows'
+      return Buffer.from(command === 'dumpsys activity activities'
         ? 'mCurrentFocus=Window{1 u0 com.android.systemui/SystemDialog}'
         : '');
     },

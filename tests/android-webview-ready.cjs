@@ -22,6 +22,14 @@ function focusedWindow(output) {
     .find(line => line.includes('mCurrentFocus=')) || '';
 }
 
+async function readFocusedWindow(device) {
+  const windowFocus = focusedWindow(await device.shell('dumpsys window windows'));
+  if (windowFocus) return windowFocus;
+  // Recent emulator images can omit mCurrentFocus from the window-service
+  // subcommand while still reporting it in the activity-service dump.
+  return focusedWindow(await device.shell('dumpsys activity activities'));
+}
+
 async function ensureAppWindowFocus(device, options = {}) {
   const pkg = options.pkg || DEFAULT_PACKAGE;
   const activity = options.activity || DEFAULT_ACTIVITY;
@@ -32,7 +40,7 @@ async function ensureAppWindowFocus(device, options = {}) {
   let focus = '';
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    focus = focusedWindow(await device.shell('dumpsys window windows'));
+    focus = await readFocusedWindow(device);
     if (focus.includes(pkg)) return focus;
 
     onRetry({ attempt, focus });
@@ -44,7 +52,7 @@ async function ensureAppWindowFocus(device, options = {}) {
     await sleep(quietPeriodMs);
   }
 
-  focus = focusedWindow(await device.shell('dumpsys window windows'));
+  focus = await readFocusedWindow(device);
   if (focus.includes(pkg)) return focus;
   throw new Error(`Android window focus did not reach ${pkg}; current focus: ${focus || 'unknown'}`);
 }
@@ -138,6 +146,7 @@ module.exports = {
   attachStableAppPage,
   ensureAppWindowFocus,
   focusedWindow,
+  readFocusedWindow,
   isTargetClosedError,
   StartupWebViewClosedError,
 };
