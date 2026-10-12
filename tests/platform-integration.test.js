@@ -164,6 +164,24 @@ test("keeps the multi-platform preview asset contract synchronized", () => {
   assert.match(releaseWorkflow, /test "\$\(wc -l < publish\/SHA256SUMS\.txt\)" -eq 9/);
 });
 
+test("ships a branded adaptive Android launcher icon with themed-icon support", () => {
+  const prepareAndroid = read("scripts/prepare-android.mjs");
+  const fallback = read("native/android/app/src/main/res/mipmap-anydpi/scical_launcher.xml");
+  const adaptive = read("native/android/app/src/main/res/mipmap-anydpi-v26/scical_launcher.xml");
+  const themed = read("native/android/app/src/main/res/mipmap-anydpi-v33/scical_launcher.xml");
+  const foreground = read("native/android/app/src/main/res/drawable/scical_icon_foreground.xml");
+  const monochrome = read("native/android/app/src/main/res/drawable/scical_icon_monochrome.xml");
+  assert.match(prepareAndroid, /android:icon="@mipmap\/scical_launcher"/);
+  assert.match(prepareAndroid, /android:roundIcon="@mipmap\/scical_launcher"/);
+  assert.match(fallback, /<vector/);
+  assert.match(adaptive, /<adaptive-icon/);
+  assert.match(adaptive, /@color\/scical_launcher_background/);
+  assert.match(adaptive, /@drawable\/scical_icon_foreground/);
+  assert.match(themed, /<monochrome android:drawable="@drawable\/scical_icon_monochrome"/);
+  assert.match(foreground, /#A7EDCE/);
+  assert.match(monochrome, /android:strokeColor="#FFFFFFFF"/);
+});
+
 test("keeps the rolling Android testing Release public, prerelease and non-destructive", () => {
   const workflow = read(".github/workflows/android.yml");
   const androidSmoke = read("tests/android-smoke.cjs");
