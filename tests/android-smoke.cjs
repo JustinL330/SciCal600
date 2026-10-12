@@ -5,17 +5,24 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
   const [device] = await android.devices();
   assert.ok(device, 'Android emulator exists');
   try {
+    // A fresh API 35 emulator reports boot complete before its final package
+    // and display-asset updates. Those updates can legitimately relaunch the
+    // foreground Activity and replace its WebView, so attach only after the
+    // short system-settling window. The override is useful for local devices.
+    const startupSettleMs = Number(process.env.ANDROID_SMOKE_SETTLE_MS || 20_000);
+    assert.ok(Number.isFinite(startupSettleMs) && startupSettleMs >= 0, 'valid Android startup settle time');
+    await new Promise(resolve => setTimeout(resolve, startupSettleMs));
+    await ensureAppWindowFocus(device, {
+      onRetry: ({ attempt, focus }) => {
+        console.warn(`Android focus attempt ${attempt} found a non-app window; restoring SciCal600: ${focus || 'unknown'}`);
+      },
+    });
     const page = await attachStableAppPage(device, {
       onRetry: ({ attempt, error, pid, processIds }) => {
         console.warn(`Android startup WebView attempt ${attempt} (WebView pid ${pid || 'unknown'}, app pid ${processIds}) closed; reconnecting: ${error.message}`);
       },
     });
     assert.ok(page, 'offline WebView page exists');
-    await ensureAppWindowFocus(device, {
-      onRetry: ({ attempt, focus }) => {
-        console.warn(`Android focus attempt ${attempt} found a non-app window; restoring SciCal600: ${focus || 'unknown'}`);
-      },
-    });
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
     assert.deepEqual(external, [], 'all application scripts/styles are bundled locally');
