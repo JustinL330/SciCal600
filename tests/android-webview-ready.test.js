@@ -1,7 +1,12 @@
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
 const test = require('node:test');
-const { attachStableAppPage, isTargetClosedError } = require('./android-webview-ready.cjs');
+const {
+  attachStableAppPage,
+  ensureAppWindowFocus,
+  focusedWindow,
+  isTargetClosedError,
+} = require('./android-webview-ready.cjs');
 
 class FakeWebView extends EventEmitter {
   constructor(pid, page) {
@@ -139,4 +144,51 @@ test('recognizes only lifecycle closure failures as retryable', () => {
   assert.equal(isTargetClosedError({ name: 'TargetClosedError', message: 'closed' }), true);
   assert.equal(isTargetClosedError(new Error('Target page, context or browser has been closed')), true);
   assert.equal(isTargetClosedError(new Error('calculator assertion failed')), false);
+});
+
+test('extracts the current Android focus window', () => {
+  assert.match(
+    focusedWindow('other\nmCurrentFocus=Window{42 u0 io.github.justinfromhkg.scical600/MainActivity}\nmore'),
+    /scical600/,
+  );
+  assert.equal(focusedWindow('no focused window here'), '');
+});
+
+test('dismisses a non-app overlay and verifies app focus before Back testing', async () => {
+  const commands = [];
+  const focusOutputs = [
+    'mCurrentFocus=Window{1 u0 Application Not Responding: com.android.launcher3}',
+    'mCurrentFocus=Window{2 u0 io.github.justinfromhkg.scical600/io.github.justinfromhkg.scical600.MainActivity}',
+  ];
+  const device = {
+    async shell(command) {
+      commands.push(command);
+      return command === 'dumpsys window windows' ? Buffer.from(focusOutputs.shift()) : Buffer.from('');
+    },
+  };
+
+  const focus = await ensureAppWindowFocus(device, { sleep: async () => {} });
+
+  assert.match(focus, /scical600/);
+  assert.deepEqual(commands, [
+    'dumpsys window windows',
+    'input keyevent KEYCODE_BACK',
+    'am start -W -n io.github.justinfromhkg.scical600/.MainActivity',
+    'dumpsys window windows',
+  ]);
+});
+
+test('fails when the app cannot obtain Android window focus', async () => {
+  const device = {
+    async shell(command) {
+      return Buffer.from(command === 'dumpsys window windows'
+        ? 'mCurrentFocus=Window{1 u0 com.android.systemui/SystemDialog}'
+        : '');
+    },
+  };
+
+  await assert.rejects(
+    ensureAppWindowFocus(device, { maxAttempts: 2, sleep: async () => {} }),
+    /window focus did not reach io\.github\.justinfromhkg\.scical600/,
+  );
 });

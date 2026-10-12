@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { _android: android } = require('playwright');
-const { attachStableAppPage } = require('./android-webview-ready.cjs');
+const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview-ready.cjs');
 (async () => {
   const [device] = await android.devices();
   assert.ok(device, 'Android emulator exists');
@@ -11,6 +11,11 @@ const { attachStableAppPage } = require('./android-webview-ready.cjs');
       },
     });
     assert.ok(page, 'offline WebView page exists');
+    await ensureAppWindowFocus(device, {
+      onRetry: ({ attempt, focus }) => {
+        console.warn(`Android focus attempt ${attempt} found a non-app window; restoring SciCal600: ${focus || 'unknown'}`);
+      },
+    });
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
     assert.deepEqual(external, [], 'all application scripts/styles are bundled locally');

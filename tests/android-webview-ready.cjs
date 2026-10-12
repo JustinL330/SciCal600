@@ -1,4 +1,5 @@
 const DEFAULT_PACKAGE = 'io.github.justinfromhkg.scical600';
+const DEFAULT_ACTIVITY = `${DEFAULT_PACKAGE}/.MainActivity`;
 
 class StartupWebViewClosedError extends Error {
   constructor(message) {
@@ -13,6 +14,39 @@ function isTargetClosedError(error) {
   if (!error) return false;
   if (error instanceof StartupWebViewClosedError || error.name === 'TargetClosedError') return true;
   return /Target (?:page, context or browser|page|context|browser).*closed/i.test(String(error.message || error));
+}
+
+function focusedWindow(output) {
+  return String(output || '')
+    .split(/\r?\n/)
+    .find(line => line.includes('mCurrentFocus=')) || '';
+}
+
+async function ensureAppWindowFocus(device, options = {}) {
+  const pkg = options.pkg || DEFAULT_PACKAGE;
+  const activity = options.activity || DEFAULT_ACTIVITY;
+  const maxAttempts = options.maxAttempts || 4;
+  const quietPeriodMs = options.quietPeriodMs || 500;
+  const sleep = options.sleep || delay;
+  const onRetry = options.onRetry || (() => {});
+  let focus = '';
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    focus = focusedWindow(await device.shell('dumpsys window windows'));
+    if (focus.includes(pkg)) return focus;
+
+    onRetry({ attempt, focus });
+    // A freshly booted emulator can leave a launcher/system ANR dialog above
+    // the already-resumed app. Dismiss only a confirmed non-app window, then
+    // bring the target activity to the foreground and verify it owns focus.
+    if (focus) await device.shell('input keyevent KEYCODE_BACK');
+    await device.shell(`am start -W -n ${activity}`);
+    await sleep(quietPeriodMs);
+  }
+
+  focus = focusedWindow(await device.shell('dumpsys window windows'));
+  if (focus.includes(pkg)) return focus;
+  throw new Error(`Android window focus did not reach ${pkg}; current focus: ${focus || 'unknown'}`);
 }
 
 async function waitForReplacementWebView(device, previousWebView, pkg, timeoutMs, sleep, now) {
@@ -100,4 +134,10 @@ async function attachStableAppPage(device, options = {}) {
   throw failure;
 }
 
-module.exports = { attachStableAppPage, isTargetClosedError, StartupWebViewClosedError };
+module.exports = {
+  attachStableAppPage,
+  ensureAppWindowFocus,
+  focusedWindow,
+  isTargetClosedError,
+  StartupWebViewClosedError,
+};
