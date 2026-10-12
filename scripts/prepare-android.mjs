@@ -31,7 +31,7 @@ manifest = manifest.replace(/<application\b([^>]*)>/, (_match, attributes) => {
     .replace(/\sandroid:usesCleartextTraffic="[^"]*"/g, '')
     .replace(/\sandroid:icon="[^"]*"/g, '')
     .replace(/\sandroid:roundIcon="[^"]*"/g, '');
-  return `<application${hardenedAttributes} android:allowBackup="false" android:usesCleartextTraffic="false" android:icon="@drawable/scical_icon" android:roundIcon="@drawable/scical_icon">`;
+  return `<application${hardenedAttributes} android:allowBackup="false" android:usesCleartextTraffic="false" android:icon="@mipmap/scical_launcher" android:roundIcon="@mipmap/scical_launcher">`;
 });
 writeFileSync(manifestPath, manifest);
 let gradle = readFileSync('android/app/build.gradle', 'utf8');
@@ -43,7 +43,8 @@ const syncedManifest = readFileSync(manifestPath, 'utf8');
 for (const requiredSetting of [
   'android:allowBackup="false"',
   'android:usesCleartextTraffic="false"',
-  'android:icon="@drawable/scical_icon"',
+  'android:icon="@mipmap/scical_launcher"',
+  'android:roundIcon="@mipmap/scical_launcher"',
 ]) {
   if (!syncedManifest.includes(requiredSetting)) {
     throw new Error(`Android hardening postcondition is missing: ${requiredSetting}`);
