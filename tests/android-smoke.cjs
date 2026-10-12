@@ -1,14 +1,16 @@
 const assert = require('node:assert/strict');
 const { _android: android } = require('playwright');
+const { attachStableAppPage } = require('./android-webview-ready.cjs');
 (async () => {
   const [device] = await android.devices();
   assert.ok(device, 'Android emulator exists');
   try {
-    const webview = await device.webView({ pkg: 'io.github.justinfromhkg.scical600' });
-    const page = await webview.page();
+    const page = await attachStableAppPage(device, {
+      onRetry: ({ attempt, error, pid, processIds }) => {
+        console.warn(`Android startup WebView attempt ${attempt} (WebView pid ${pid || 'unknown'}, app pid ${processIds}) closed; reconnecting: ${error.message}`);
+      },
+    });
     assert.ok(page, 'offline WebView page exists');
-    await page.waitForFunction(() => window.SciCalUI && document.documentElement.dataset.native === 'android');
-    await page.waitForFunction(() => ['true', 'error'].includes(document.documentElement.dataset.androidBackReady));
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
     assert.deepEqual(external, [], 'all application scripts/styles are bundled locally');
