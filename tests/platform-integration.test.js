@@ -197,6 +197,13 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   assert.equal(manifest.engines.node, ">=22.12.0");
   assert.match(workflow, /npm audit --audit-level=high/);
   assert.doesNotMatch(workflow, /npm audit[^\n]*--omit=dev/);
+  assert.match(workflow, /SCICAL_VERSION_CODE: \$\{\{ github\.run_number \}\}/);
+  assert.match(workflow, /versionCode='\$\{GITHUB_RUN_NUMBER\}'/);
+  assert.match(workflow, /versionName='\$EXPECTED_VERSION_NAME'/);
+  assert.match(workflow, /version_code=%s\\nversion_name=%s/);
+  const androidVersioning = read("native/android/app/scical.gradle");
+  assert.match(androidVersioning, /packageVersion\}-dev\.\$\{buildNumber\}/);
+  assert.match(androidVersioning, /SCICAL_VERSION_NAME/);
   assert.match(androidSmoke, /device\.shell\('input keyevent KEYCODE_BACK'\)/, "Back smoke uses the selected device's ADB connection");
   assert.doesNotMatch(androidSmoke, /device\.input\.press/, "Back smoke must not require Playwright's optional Android driver APKs");
   assert.match(workflow, /node tests\/android-smoke\.cjs \|\| \(adb logcat/);

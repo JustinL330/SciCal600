@@ -47,6 +47,10 @@ jobs:
           npm run android:sync
       - name: Gradle debug build and lint
         working-directory: android
+        env:
+          # Every CI build is upgrade-ordered and identifiable in Android's app
+          # details. Local builds keep the package.json version and code 1.
+          SCICAL_VERSION_CODE: ${{ github.run_number }}
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug lintDebug --no-daemon
@@ -57,7 +61,10 @@ jobs:
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
           "$BUILD_TOOLS/apksigner" verify --verbose artifacts/SciCal600-debug.apk
           "$BUILD_TOOLS/aapt" dump badging artifacts/SciCal600-debug.apk > artifacts/apk-badging.txt
+          EXPECTED_VERSION_NAME="$(node -p 'require("./package.json").version')-dev.${GITHUB_RUN_NUMBER}"
           grep "package: name='io.github.justinfromhkg.scical600'" artifacts/apk-badging.txt
+          grep "versionCode='${GITHUB_RUN_NUMBER}'" artifacts/apk-badging.txt
+          grep "versionName='$EXPECTED_VERSION_NAME'" artifacts/apk-badging.txt
           (cd artifacts && sha256sum SciCal600-debug.apk > SHA256SUMS)
           stat -c '%n %s bytes' artifacts/SciCal600-debug.apk | tee artifacts/size.txt
           cp package-lock.json artifacts/
@@ -185,14 +192,19 @@ jobs:
           IMMUTABLE_TAG="android-debug-${GITHUB_SHA:0:12}"
           APK_SHA256=$(awk '{print $1; exit}' artifacts/SHA256SUMS)
           APK_SIZE=$(stat -c '%s' artifacts/SciCal600-debug.apk)
-          printf 'commit=%s\nworkflow_run=%s\nfile=SciCal600-debug.apk\nsize_bytes=%s\nsha256=%s\nsigning=development key (not production)\n' \
-            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$APK_SIZE" "$APK_SHA256" > artifacts/build-info.txt
-          printf -v NOTES '%s\n\n%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s' \
+          APK_VERSION_CODE=$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" artifacts/apk-badging.txt | head -1)
+          APK_VERSION_NAME=$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" artifacts/apk-badging.txt | head -1)
+          test "$APK_VERSION_CODE" = "$GITHUB_RUN_NUMBER"
+          test -n "$APK_VERSION_NAME"
+          printf 'commit=%s\nworkflow_run=%s\nfile=SciCal600-debug.apk\nversion_code=%s\nversion_name=%s\nsize_bytes=%s\nsha256=%s\nsigning=development key (not production)\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$APK_VERSION_CODE" "$APK_VERSION_NAME" "$APK_SIZE" "$APK_SHA256" > artifacts/build-info.txt
+          printf -v NOTES '%s\n\n%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s\n%s' \
             'Rolling, publicly downloadable Android testing build.' \
             'This APK passed the Web tests, full high-severity dependency audit, Gradle build/lint, signature/package checks, and Android emulator offline checks. It uses a development signing key and is not the production-signed stable app. A different development certificate can require uninstalling an older testing build.' \
             'This mutable channel keeps a fixed download tag; that tag is not the asset source revision. Use the source commit, build-info.txt and immutable per-commit Release below for provenance.' \
             "Source commit: $GITHUB_SHA" \
             "Immutable audit Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$IMMUTABLE_TAG" \
+            "Android version: $APK_VERSION_NAME (code $APK_VERSION_CODE)" \
             "APK size: $APK_SIZE bytes" \
             "SHA-256: $APK_SHA256" \
             "Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
