@@ -198,6 +198,7 @@ test("ships a branded Android launch screen on modern and legacy devices", () =>
 test("ships localized Android launcher shortcuts for every calculator workspace", () => {
   const prepareAndroid = read("scripts/prepare-android.mjs");
   const shortcuts = read("native/android/app/src/main/res/xml/scical_shortcuts.xml");
+  const nativeIdentifiers = read("native/android/app/src/main/res/values/strings.xml");
   assert.match(prepareAndroid, /android\.app\.shortcuts/);
   assert.match(prepareAndroid, /@xml\/scical_shortcuts/);
   for (const route of ["scientific-calculator", "linear-algebra", "computer-calculator", "economics-calculator"]) {
@@ -212,6 +213,9 @@ test("ships localized Android launcher shortcuts for every calculator workspace"
     for (const key of ["shortcut_scientific", "shortcut_linear", "shortcut_computer", "shortcut_economics"]) {
       assert.match(strings, new RegExp(`<string name="${key}">[^<]+<\\/string>`), `${directory}.${key}`);
     }
+  }
+  for (const key of ["app_name", "title_activity_main", "package_name", "custom_url_scheme"]) {
+    assert.match(nativeIdentifiers, new RegExp(`<string name="${key}" translatable="false">`), `${key} is a native identifier, not untranslated copy`);
   }
 });
 
