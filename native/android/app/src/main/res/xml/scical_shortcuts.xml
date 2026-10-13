@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="scientific-calculator"
+        android:enabled="true"
+        android:icon="@drawable/scical_icon"
+        android:shortcutShortLabel="@string/shortcut_scientific">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.github.justinfromhkg.scical600"
+            android:targetClass="io.github.justinfromhkg.scical600.MainActivity"
+            android:data="scical600://scientific-calculator" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="linear-algebra"
+        android:enabled="true"
+        android:icon="@drawable/scical_icon"
+        android:shortcutShortLabel="@string/shortcut_linear">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.github.justinfromhkg.scical600"
+            android:targetClass="io.github.justinfromhkg.scical600.MainActivity"
+            android:data="scical600://linear-algebra" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="computer-calculator"
+        android:enabled="true"
+        android:icon="@drawable/scical_icon"
+        android:shortcutShortLabel="@string/shortcut_computer">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.github.justinfromhkg.scical600"
+            android:targetClass="io.github.justinfromhkg.scical600.MainActivity"
+            android:data="scical600://computer-calculator" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="economics-calculator"
+        android:enabled="true"
+        android:icon="@drawable/scical_icon"
+        android:shortcutShortLabel="@string/shortcut_economics">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.github.justinfromhkg.scical600"
+            android:targetClass="io.github.justinfromhkg.scical600.MainActivity"
+            android:data="scical600://economics-calculator" />
+    </shortcut>
+</shortcuts>

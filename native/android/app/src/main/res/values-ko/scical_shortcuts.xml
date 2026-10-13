@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_scientific">과학 계산</string>
+    <string name="shortcut_linear">선형대수</string>
+    <string name="shortcut_computer">컴퓨터</string>
+    <string name="shortcut_economics">경제 계산</string>
+</resources>

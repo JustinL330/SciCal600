@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_scientific">علمية</string>
+    <string name="shortcut_linear">جبر خطي</string>
+    <string name="shortcut_computer">حاسوب</string>
+    <string name="shortcut_economics">اقتصاد</string>
+</resources>

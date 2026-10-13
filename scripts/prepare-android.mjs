@@ -37,6 +37,13 @@ manifest = manifest.replace(/<application\b([^>]*)>/, (_match, attributes) => {
     .replace(/\sandroid:roundIcon="[^"]*"/g, '');
   return `<application${hardenedAttributes} android:allowBackup="false" android:usesCleartextTraffic="false" android:icon="@mipmap/scical_launcher" android:roundIcon="@mipmap/scical_launcher">`;
 });
+if (!manifest.includes('android.app.shortcuts')) {
+  manifest = manifest.replace(/(<\/intent-filter>\s*)(<\/activity>)/, `$1
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/scical_shortcuts" />
+        $2`);
+}
 writeFileSync(manifestPath, manifest);
 let gradle = readFileSync('android/app/build.gradle', 'utf8');
 if (!gradle.includes('scical.gradle')) gradle += "\napply from: 'scical.gradle'\n";
@@ -83,4 +90,8 @@ for (const requiredSplashSetting of [
   if (!syncedStyles.includes(requiredSplashSetting)) {
     throw new Error(`Android splash-screen postcondition is missing: ${requiredSplashSetting}`);
   }
+}
+if (!syncedManifest.includes('android:name="android.app.shortcuts"')
+    || !syncedManifest.includes('android:resource="@xml/scical_shortcuts"')) {
+  throw new Error('Android launcher-shortcut metadata is missing after sync.');
 }

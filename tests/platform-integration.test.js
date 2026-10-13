@@ -195,6 +195,26 @@ test("ships a branded Android launch screen on modern and legacy devices", () =>
   assert.match(splashColors, /<color name="scical_splash_background">#071019<\/color>/);
 });
 
+test("ships localized Android launcher shortcuts for every calculator workspace", () => {
+  const prepareAndroid = read("scripts/prepare-android.mjs");
+  const shortcuts = read("native/android/app/src/main/res/xml/scical_shortcuts.xml");
+  assert.match(prepareAndroid, /android\.app\.shortcuts/);
+  assert.match(prepareAndroid, /@xml\/scical_shortcuts/);
+  for (const route of ["scientific-calculator", "linear-algebra", "computer-calculator", "economics-calculator"]) {
+    assert.match(shortcuts, new RegExp(`android:data="scical600:\/\/${route}"`));
+  }
+  const localizedDirectories = [
+    "values", "values-ar", "values-b+yue+Hant+HK", "values-b+zh+Hans", "values-b+zh+Hant",
+    "values-de", "values-es", "values-fr", "values-ja", "values-ko", "values-ms", "values-th",
+  ];
+  for (const directory of localizedDirectories) {
+    const strings = read(`native/android/app/src/main/res/${directory}/scical_shortcuts.xml`);
+    for (const key of ["shortcut_scientific", "shortcut_linear", "shortcut_computer", "shortcut_economics"]) {
+      assert.match(strings, new RegExp(`<string name="${key}">[^<]+<\\/string>`), `${directory}.${key}`);
+    }
+  }
+});
+
 test("keeps the rolling Android testing Release public, prerelease and non-destructive", () => {
   const workflow = read(".github/workflows/android.yml");
   const androidSmoke = read("tests/android-smoke.cjs");

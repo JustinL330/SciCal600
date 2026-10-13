@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_scientific">Saintifik</string>
+    <string name="shortcut_linear">Algebra linear</string>
+    <string name="shortcut_computer">Komputer</string>
+    <string name="shortcut_economics">Ekonomi</string>
+</resources>

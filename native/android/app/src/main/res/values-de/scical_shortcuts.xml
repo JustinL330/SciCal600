@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_scientific">Wissenschaft</string>
+    <string name="shortcut_linear">Matrizen</string>
+    <string name="shortcut_computer">Computer</string>
+    <string name="shortcut_economics">Wirtschaft</string>
+</resources>

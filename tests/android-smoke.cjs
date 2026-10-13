@@ -30,6 +30,9 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
       await page.evaluate(view => window.SciCalUI.showView(view), view);
       assert.ok(await page.locator('[data-view-panel="' + view + '"]').isVisible(), view + ' works offline');
     }
+    await device.shell('am start -W -a android.intent.action.VIEW -d scical600://linear-algebra -n io.github.justinfromhkg.scical600/.MainActivity');
+    await page.waitForFunction(() => window.SciCalUI.view === 'linear-algebra');
+    assert.equal(await page.locator('html').getAttribute('data-android-shortcut'), 'linear-algebra', 'launcher shortcut opens its offline workspace');
     await page.evaluate(() => window.SciCalUI.showView('calculator'));
     for (const key of ['AC', '1', '+', '1', 'EXE']) await page.locator('.calc-key[data-key-label="' + key + '"]').click();
     assert.equal((await page.locator('#result').textContent()).trim(), '2', 'offline 1+1');
@@ -54,7 +57,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, launcher shortcut, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }
