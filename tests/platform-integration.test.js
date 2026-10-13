@@ -182,6 +182,19 @@ test("ships a branded adaptive Android launcher icon with themed-icon support", 
   assert.match(monochrome, /android:strokeColor="#FFFFFFFF"/);
 });
 
+test("ships a branded Android launch screen on modern and legacy devices", () => {
+  const prepareAndroid = read("scripts/prepare-android.mjs");
+  const splash = read("native/android/app/src/main/res/drawable/scical_splash.xml");
+  const splashColors = read("native/android/app/src/main/res/values/scical_splash.xml");
+  assert.match(prepareAndroid, /windowSplashScreenBackground[^\n]*@color\/scical_splash_background/);
+  assert.match(prepareAndroid, /windowSplashScreenAnimatedIcon[^\n]*@drawable\/scical_icon_foreground/);
+  assert.match(prepareAndroid, /postSplashScreenTheme[^\n]*@style\/AppTheme\.NoActionBar/);
+  assert.match(prepareAndroid, /android:background[^\n]*@drawable\/scical_splash/);
+  assert.match(splash, /@color\/scical_splash_background/);
+  assert.match(splash, /@drawable\/scical_icon_foreground/);
+  assert.match(splashColors, /<color name="scical_splash_background">#071019<\/color>/);
+});
+
 test("keeps the rolling Android testing Release public, prerelease and non-destructive", () => {
   const workflow = read(".github/workflows/android.yml");
   const androidSmoke = read("tests/android-smoke.cjs");

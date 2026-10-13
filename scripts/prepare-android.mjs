@@ -7,8 +7,12 @@ const capacitorCli = resolve('node_modules', '@capacitor', 'cli', 'bin', 'capaci
 const run = (...args) => execFileSync(process.execPath, [capacitorCli, ...args], { stdio: 'inherit' });
 if (!existsSync('android')) run('add', 'android');
 const manifestPath = resolve('android', 'app', 'src', 'main', 'AndroidManifest.xml');
+const stylesPath = resolve('android', 'app', 'src', 'main', 'res', 'values', 'styles.xml');
 if (!existsSync(manifestPath)) {
   throw new Error('The generated android/ directory is incomplete. Remove that disposable directory and run npm run android:sync again.');
+}
+if (!existsSync(stylesPath)) {
+  throw new Error('The generated Android styles are missing. Remove the disposable android/ directory and run npm run android:sync again.');
 }
 await build({
   entryPoints: [resolve('native', 'android-entry.js')],
@@ -37,6 +41,20 @@ writeFileSync(manifestPath, manifest);
 let gradle = readFileSync('android/app/build.gradle', 'utf8');
 if (!gradle.includes('scical.gradle')) gradle += "\napply from: 'scical.gradle'\n";
 writeFileSync('android/app/build.gradle', gradle);
+
+let styles = readFileSync(stylesPath, 'utf8');
+const launchThemePattern = /<style name="AppTheme\.NoActionBarLaunch"[^>]*>[\s\S]*?<\/style>/;
+if (!launchThemePattern.test(styles)) {
+  throw new Error('Generated Android styles have no AppTheme.NoActionBarLaunch theme.');
+}
+styles = styles.replace(launchThemePattern, `<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/scical_splash</item>
+        <item name="windowSplashScreenBackground">@color/scical_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/scical_icon_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/scical_splash_background</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+    </style>`);
+writeFileSync(stylesPath, styles);
 run('sync', 'android');
 
 const syncedManifest = readFileSync(manifestPath, 'utf8');
@@ -53,4 +71,16 @@ for (const requiredSetting of [
 const syncedGradle = readFileSync('android/app/build.gradle', 'utf8');
 if ((syncedGradle.match(/scical\.gradle/g) || []).length !== 1) {
   throw new Error('Expected exactly one scical.gradle include in android/app/build.gradle.');
+}
+const syncedStyles = readFileSync(stylesPath, 'utf8');
+for (const requiredSplashSetting of [
+  '<item name="android:background">@drawable/scical_splash</item>',
+  '<item name="windowSplashScreenBackground">@color/scical_splash_background</item>',
+  '<item name="windowSplashScreenAnimatedIcon">@drawable/scical_icon_foreground</item>',
+  '<item name="windowSplashScreenIconBackgroundColor">@color/scical_splash_background</item>',
+  '<item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>',
+]) {
+  if (!syncedStyles.includes(requiredSplashSetting)) {
+    throw new Error(`Android splash-screen postcondition is missing: ${requiredSplashSetting}`);
+  }
 }
