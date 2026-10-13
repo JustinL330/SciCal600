@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_scientific">科学计算</string>
+    <string name="shortcut_linear">线性代数</string>
+    <string name="shortcut_computer">计算机</string>
+    <string name="shortcut_economics">经济计算</string>
+</resources>

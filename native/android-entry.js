@@ -1,9 +1,22 @@
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { handleBack } from './back.js';
+import { viewFromAndroidShortcutUrl } from './android-shortcuts.js';
 
 if (Capacitor.isNativePlatform()) {
   document.documentElement.dataset.native = 'android';
+  const openShortcut = ({ url } = {}) => {
+    const view = viewFromAndroidShortcutUrl(url);
+    if (!view) return false;
+    if (document.documentElement.dataset.androidShortcutUrl !== url || window.SciCalUI?.view !== view) {
+      window.SciCalUI?.showView(view);
+      document.documentElement.dataset.androidShortcutUrl = url;
+      document.documentElement.dataset.androidShortcut = view;
+    }
+    return true;
+  };
+  App.addListener('appUrlOpen', openShortcut).catch((error) => console.error(error));
+  App.getLaunchUrl().then(openShortcut).catch((error) => console.error(error));
   App.addListener('backButton', ({ canGoBack }) => {
     const handled = Number(document.documentElement.dataset.androidBackEvents || '0') + 1;
     document.documentElement.dataset.androidBackEvents = String(handled);
