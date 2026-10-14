@@ -1,10 +1,21 @@
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { handleBack } from './back.js';
 import { viewFromAndroidShortcutUrl } from './android-shortcuts.js';
+import { installButtonHaptics } from './haptics.js';
 
 if (Capacitor.isNativePlatform()) {
   document.documentElement.dataset.native = 'android';
+  installButtonHaptics({
+    document,
+    impact: () => Haptics.impact({ style: ImpactStyle.Light }).then(() => {
+      document.documentElement.dataset.androidHaptics = 'active';
+    }).catch(() => {
+      document.documentElement.dataset.androidHaptics = 'unavailable';
+    }),
+  });
+  document.documentElement.dataset.androidHaptics = 'ready';
   const openShortcut = ({ url } = {}) => {
     const view = viewFromAndroidShortcutUrl(url);
     if (!view) return false;
