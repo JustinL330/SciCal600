@@ -229,6 +229,7 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   const iosWorkflow = read(".github/workflows/ios.yml");
   const manifest = JSON.parse(read("package.json"));
   assert.equal(manifest.dependencies["@capacitor/android"], "8.5.2");
+  assert.equal(manifest.dependencies["@capacitor/haptics"], "8.0.2");
   assert.equal(manifest.devDependencies["@capacitor/ios"], "8.5.2");
   assert.equal(manifest.devDependencies["electron-builder"], "26.17.0");
   assert.equal(manifest.engines.node, ">=22.12.0");
@@ -268,6 +269,19 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   for (const standalone of [workflow, clientWorkflows, iosWorkflow]) {
     assert.doesNotMatch(standalone, /tags:\s*\[['"]v\*['"]\]/, "standalone platform workflows must not publish competing stable v* Releases");
   }
+});
+
+test("adds native Android haptic feedback without changing the web calculator", () => {
+  const nativeEntry = read("native/android-entry.js");
+  const haptics = read("native/haptics.js");
+  const androidSmoke = read("tests/android-smoke.cjs");
+  assert.match(nativeEntry, /@capacitor\/haptics/);
+  assert.match(nativeEntry, /ImpactStyle\.Light/);
+  assert.match(nativeEntry, /installButtonHaptics/);
+  assert.match(haptics, /closest\('button'\)/);
+  assert.match(haptics, /event\.isPrimary === false/);
+  assert.match(androidSmoke, /data-android-haptics/);
+  assert.doesNotMatch(read("index.html"), /@capacitor\/haptics/, "web HTML stays independent of the native plugin");
 });
 
 test("does not ship known client-side secret patterns", () => {
