@@ -230,6 +230,7 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   const manifest = JSON.parse(read("package.json"));
   assert.equal(manifest.dependencies["@capacitor/android"], "8.5.2");
   assert.equal(manifest.dependencies["@capacitor/haptics"], "8.0.2");
+  assert.equal(manifest.dependencies["@capacitor/share"], "8.0.3");
   assert.equal(manifest.devDependencies["@capacitor/ios"], "8.5.2");
   assert.equal(manifest.devDependencies["electron-builder"], "26.17.0");
   assert.equal(manifest.engines.node, ">=22.12.0");
@@ -282,6 +283,22 @@ test("adds native Android haptic feedback without changing the web calculator", 
   assert.match(haptics, /event\.isPrimary === false/);
   assert.match(androidSmoke, /data-android-haptics/);
   assert.doesNotMatch(read("index.html"), /@capacitor\/haptics/, "web HTML stays independent of the native plugin");
+});
+
+test("shares the current result through Android while remaining hidden on the web", () => {
+  const html = read("index.html");
+  const nativeEntry = read("native/android-entry.js");
+  const shareResult = read("native/share-result.js");
+  const siteUi = read("site-ui.js");
+  const additionalLocales = read("additional-locales.js");
+  assert.match(html, /id="android-share-result"[^>]*hidden[^>]*data-i18n-aria="shareResult"/);
+  assert.match(nativeEntry, /@capacitor\/share/);
+  assert.match(nativeEntry, /installResultShare/);
+  assert.match(shareResult, /translate\('shareResult'\)/);
+  assert.match(shareResult, /dialogTitle/);
+  assert.equal((siteUi.match(/shareResult:/g) || []).length, 10, "ten core dictionaries localize sharing");
+  assert.equal((additionalLocales.match(/shareResult:/g) || []).length, 2, "Thai and Cantonese localize sharing");
+  assert.match(read("tests/android-smoke.cjs"), /dataset\.androidShare/);
 });
 
 test("does not ship known client-side secret patterns", () => {

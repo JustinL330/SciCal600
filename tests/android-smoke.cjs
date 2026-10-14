@@ -25,6 +25,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     assert.ok(page, 'offline WebView page exists');
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
     assert.ok(['ready', 'active'].includes(await page.locator('html').getAttribute('data-android-haptics')), 'native button haptics registered');
+    await page.waitForFunction(() => document.documentElement.dataset.androidShare === 'ready');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
     assert.deepEqual(external, [], 'all application scripts/styles are bundled locally');
     for (const view of ['calculator', 'linear-algebra', 'computer-calculator', 'economics-calculator']) {
@@ -35,6 +36,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     await page.waitForFunction(() => window.SciCalUI.view === 'linear-algebra');
     assert.equal(await page.locator('html').getAttribute('data-android-shortcut'), 'linear-algebra', 'launcher shortcut opens its offline workspace');
     await page.evaluate(() => window.SciCalUI.showView('calculator'));
+    assert.ok(await page.locator('#android-share-result').isVisible(), 'native result sharing is available');
     for (const key of ['AC', '1', '+', '1', 'EXE']) await page.locator('.calc-key[data-key-label="' + key + '"]').click();
     assert.equal((await page.locator('#result').textContent()).trim(), '2', 'offline 1+1');
     await page.waitForFunction(() => document.documentElement.dataset.androidHaptics === 'active');
@@ -59,7 +61,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, launcher shortcut, native haptics, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, launcher shortcut, native haptics and sharing, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }
