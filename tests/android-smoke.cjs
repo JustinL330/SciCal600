@@ -24,6 +24,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     });
     assert.ok(page, 'offline WebView page exists');
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
+    await page.waitForFunction(() => document.documentElement.dataset.androidSystemBars === 'ready');
     assert.ok(['ready', 'active'].includes(await page.locator('html').getAttribute('data-android-haptics')), 'native button haptics registered');
     await page.waitForFunction(() => document.documentElement.dataset.androidShare === 'ready');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
@@ -61,7 +62,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, launcher shortcut, native haptics and sharing, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, launcher shortcut, native system bars, haptics and sharing, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }

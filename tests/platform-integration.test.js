@@ -301,6 +301,25 @@ test("shares the current result through Android while remaining hidden on the we
   assert.match(read("tests/android-smoke.cjs"), /dataset\.androidShare/);
 });
 
+test("keeps Android system-bar content legible over the edge-to-edge dark shell", () => {
+  const config = JSON.parse(read("capacitor.config.json"));
+  const nativeEntry = read("native/android-entry.js");
+  const systemBars = read("native/system-bars.js");
+  assert.deepEqual(config.plugins.SystemBars, {
+    insetsHandling: "css",
+    initialViewportFitValueHint: "cover",
+    style: "DARK",
+    hidden: false,
+  });
+  assert.match(nativeEntry, /SystemBarsStyle\.Dark/);
+  assert.match(nativeEntry, /configureAndroidSystemBars/);
+  assert.match(systemBars, /systemBars\.setStyle/);
+  assert.match(systemBars, /systemBars\.show/);
+  assert.match(read("tests/android-smoke.cjs"), /dataset\.androidSystemBars/);
+  assert.match(read("index.html"), /viewport-fit=cover/);
+  assert.match(read("styles.css"), /env\(safe-area-inset-top\)/);
+});
+
 test("does not ship known client-side secret patterns", () => {
   const client = ["index.html","linear-algebra.js","linear-algebra-i18n.js","additional-locales.js","computer-calculator.js","economics-calculator.js","computer-i18n.js","economics-i18n.js"].map(read).join("\n");
   assert.doesNotMatch(client, /api[_-]?key\s*[:=]\s*["'][A-Za-z0-9_-]{12,}/i);

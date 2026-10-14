@@ -1,4 +1,4 @@
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Share } from '@capacitor/share';
@@ -6,9 +6,11 @@ import { handleBack } from './back.js';
 import { viewFromAndroidShortcutUrl } from './android-shortcuts.js';
 import { installButtonHaptics } from './haptics.js';
 import { installResultShare } from './share-result.js';
+import { configureAndroidSystemBars } from './system-bars.js';
 
 if (Capacitor.isNativePlatform()) {
   document.documentElement.dataset.native = 'android';
+  configureAndroidSystemBars({ document, systemBars: SystemBars, style: SystemBarsStyle.Dark });
   installButtonHaptics({
     document,
     impact: () => Haptics.impact({ style: ImpactStyle.Light }).then(() => {
