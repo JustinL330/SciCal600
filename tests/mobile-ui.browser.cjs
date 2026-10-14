@@ -181,6 +181,7 @@ async function checkLanguagePersistence(page) {
 
   await page.goto("/", { waitUntil: "networkidle" });
   assert.equal(await page.locator("html").getAttribute("lang"), "ja", "browser Japanese should be used before a manual choice");
+  assert.equal(await page.locator("#android-share-result").isHidden(), true, "native share action stays hidden on the web");
 
   await page.locator("#language-select").selectOption("en-GB");
   assert.equal(await page.evaluate(() => localStorage.getItem("scical600.language")), "en-GB", "manual English choice should be persisted");

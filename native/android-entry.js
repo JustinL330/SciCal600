@@ -1,9 +1,11 @@
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Share } from '@capacitor/share';
 import { handleBack } from './back.js';
 import { viewFromAndroidShortcutUrl } from './android-shortcuts.js';
 import { installButtonHaptics } from './haptics.js';
+import { installResultShare } from './share-result.js';
 
 if (Capacitor.isNativePlatform()) {
   document.documentElement.dataset.native = 'android';
@@ -16,6 +18,12 @@ if (Capacitor.isNativePlatform()) {
     }),
   });
   document.documentElement.dataset.androidHaptics = 'ready';
+  installResultShare({
+    document,
+    canShare: () => Share.canShare(),
+    share: (options) => Share.share(options),
+    translate: (key) => window.SciCalUI?.translate(key) || key,
+  });
   const openShortcut = ({ url } = {}) => {
     const view = viewFromAndroidShortcutUrl(url);
     if (!view) return false;

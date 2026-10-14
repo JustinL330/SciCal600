@@ -1596,6 +1596,7 @@ body.is-calculator-view {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   min-height: calc(58px + env(safe-area-inset-bottom));
   padding: 8px max(14px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -2000,6 +2001,21 @@ body.is-calculator-view {
     min-height: 36px;
     padding: 7px 10px;
     font-size: 10px;
+  }
+
+  .calculator-dock #android-share-result {
+    flex: 0 0 auto;
+  }
+
+  .calculator-dock .android-share-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .language-picker select {
