@@ -2040,10 +2040,12 @@ body.is-calculator-view {
     font-size: 10px;
   }
 
+  .calculator-dock #android-copy-result,
   .calculator-dock #android-share-result {
     flex: 0 0 auto;
   }
 
+  .calculator-dock .android-copy-label,
   .calculator-dock .android-share-label {
     position: absolute;
     width: 1px;
