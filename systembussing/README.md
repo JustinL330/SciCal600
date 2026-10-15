@@ -2,7 +2,7 @@
 
 SystemBussing is an auxiliary computer-architecture calculator within the SciCal600 repository.
 
-It visualizes CPU registers, the ALU, memory, I/O controllers, control signals, and transfers over the system bus. The simulator supports step-by-step playback, a small editable instruction set, English and Traditional Chinese, mobile layouts, and offline caching.
+It visualizes CPU registers, the ALU, memory, I/O controllers, control signals, and transfers over the system bus. The simulator supports step-by-step playback, a small editable instruction set, mobile layouts, offline caching, and complete interface and step-explanation translations in English (the default), Japanese, Traditional Chinese, Simplified Chinese, Korean, French, German, and Spanish.
 
 Preferred Web domain: `https://systembussing.scical600.pages.dev/`
 

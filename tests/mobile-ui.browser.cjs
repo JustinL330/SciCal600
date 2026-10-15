@@ -566,6 +566,52 @@ async function runFunctionalChecks(page) {
       console.log("PASS twelve-language Android/native content and manual locale persistence");
       await context.close();
     }
+    {
+      const context = await browser.newContext({
+        baseURL: `http://127.0.0.1:${address.port}`,
+        viewport: { width: 393, height: 873 },
+        hasTouch: true,
+        isMobile: true,
+        reducedMotion: "reduce",
+      });
+      const page = await context.newPage();
+      await page.goto("/systembussing/index.html", { waitUntil: "networkidle" });
+      await page.waitForFunction(() => window.SystemBussingApp);
+      assert.equal(await page.locator("html").getAttribute("lang"), "en", "SystemBussing defaults to English");
+      assert.equal(await page.locator("#language option").count(), 8, "SystemBussing exposes all requested languages");
+      const localeExpectations = {
+        en: [/Device input/, /Ready/],
+        ja: [/デバイス入力/, /準備完了/],
+        "zh-Hant": [/裝置輸入/, /準備就緒/],
+        "zh-Hans": [/设备输入/, /准备就绪/],
+        ko: [/장치 입력/, /준비/],
+        fr: [/Entrée du périphérique/, /Prêt/],
+        de: [/Geräteeingabe/, /Bereit/],
+        es: [/Entrada del dispositivo/, /Listo/],
+      };
+      for (const [locale, [label, stage]] of Object.entries(localeExpectations)) {
+        await page.locator("#language").selectOption(locale);
+        assert.equal(await page.locator("html").getAttribute("lang"), locale, `${locale} document language`);
+        assert.match(await page.locator('label[for="device"]').textContent(), label, `${locale} static controls`);
+        assert.match(await page.locator("#stage").textContent(), stage, `${locale} changing step title`);
+        assert.ok((await page.locator("#explanation").textContent()).trim().length > 20, `${locale} changing explanation`);
+      }
+      await page.locator("#language").selectOption("fr");
+      await page.locator("#mobile-next").click();
+      assert.match(await page.locator("#stage").textContent(), /Chargement/, "translated steps remain interactive");
+      await page.locator("#language").selectOption("de");
+      await page.reload({ waitUntil: "networkidle" });
+      assert.equal(await page.locator("html").getAttribute("lang"), "de", "SystemBussing locale persists");
+      const systemBussingLayout = await page.evaluate(() => ({
+        innerWidth: window.innerWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        minControlHeight: Math.min(...[...document.querySelectorAll("button, select")].filter((element) => element.offsetParent).map((element) => element.getBoundingClientRect().height)),
+      }));
+      assert.ok(systemBussingLayout.scrollWidth <= systemBussingLayout.innerWidth, "SystemBussing has no mobile horizontal overflow");
+      assert.ok(systemBussingLayout.minControlHeight >= 44, "SystemBussing controls retain mobile touch targets");
+      console.log("PASS SystemBussing English default and eight-language interactive UI");
+      await context.close();
+    }
     for (const viewport of viewports) {
       const context = await browser.newContext({
         baseURL: `http://127.0.0.1:${address.port}`,

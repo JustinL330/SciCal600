@@ -33,6 +33,7 @@ const publicFiles = [
   "THIRD_PARTY_NOTICES.md",
   "lmc/index.html",
   "systembussing/index.html",
+  "systembussing/i18n.js",
   "systembussing/sw.js",
   "systembussing/manifest.webmanifest",
   "systembussing/icon.svg",

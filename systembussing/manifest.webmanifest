@@ -2,6 +2,7 @@
   "name": "SystemBussing CPU Simulator",
   "short_name": "SystemBussing",
   "description": "An educational CPU, memory, control-signal, and system-bus simulator.",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="SystemBussing educational CPU, memory, control-signal, and system-bus simulator."><title>SystemBussing · SciCal600 CPU Simulator</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta id="app-description" name="description" content="SystemBussing educational CPU, memory, control-signal, and system-bus simulator."><title>SystemBussing · SciCal600 CPU Simulator</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
 
 <meta name="theme-color" content="#205ab5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CPU Simulator">
+
+<script src="./i18n.js"></script>
 
 <style>
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#252525;font:16px Arial,'PingFang TC',sans-serif}main{max-width:1190px;margin:20px auto;padding:0 24px}label{display:block;color:#555;font-size:18px;margin-bottom:7px}.inputrow{display:flex;gap:12px}input,textarea,select{font:inherit;border:1px solid #ddd;border-radius:12px;padding:10px;background:white;color:#222}input{min-width:0;flex:1}button{font:inherit;border:1px solid #ddd;border-radius:12px;padding:10px 14px;background:white;color:#222;cursor:pointer}button.primary{background:#202323;color:white;border-color:#202323}button:disabled{opacity:.4;cursor:default}button:hover:not(:disabled){box-shadow:0 0 0 2px #bad0ef}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #72a1e7;outline-offset:2px}.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0 8px}.spacer{flex:1}.stage{font-size:19px;margin:8px 0}.legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:15px;margin:10px 0}.legend i{display:inline-block;width:30px;border-top:2px solid #999;vertical-align:middle;margin-right:6px}.legend .ctrl{border-top:2px dashed #42aaa7}.legend .flow{border-top:3px solid #2861b8}svg{display:block;width:100%;height:auto}svg text{font-family:Arial,'PingFang TC',sans-serif}svg .wire{fill:none;stroke:#969696;stroke-width:2}svg .control{fill:none;stroke:#45b5b0;stroke-width:2;stroke-dasharray:6 5;opacity:.32}svg .active{fill:none;stroke:#2861b8;stroke-width:4;marker-end:url(#blue)}svg .signal{fill:none;stroke:#35aaa5;stroke-width:2.5;stroke-dasharray:6 5;marker-end:url(#teal)}svg .box{stroke:#949494;stroke-width:2}svg .focus{stroke:#2861b8;stroke-width:3.5}svg .name{font-size:20px}svg .value{font-size:18px}#explanation{font-size:17px;line-height:1.65;min-height:70px;margin:8px 0 20px;padding:0 6px}details{border-top:1px solid #ddd;margin-top:16px;padding:16px 0}summary{cursor:pointer;color:#444}textarea{display:block;width:100%;height:180px;margin:12px 0;font:15px monospace}.settings{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.settings label{font-size:15px;margin:0}.settings input{width:100px;flex:0 1 100px}.note{font-size:14px;color:#666;line-height:1.6}#error{color:#b02b24;margin-top:8px}#binary{font:14px monospace;white-space:pre-wrap;line-height:1.6;background:#f7f7f7;padding:12px;border-radius:8px}.caption{color:#777;font-size:12px;margin:22px 0} @media(max-width:650px){main{padding:0 12px;margin-top:12px}.toolbar{gap:6px}button{font-size:14px;padding:8px 10px}.legend{font-size:12px;gap:8px}.stage{font-size:16px}.spacer{display:none}}
@@ -19,123 +21,129 @@ button,select{min-height:44px;touch-action:manipulation}input,textarea{font-size
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 
 
-.companion-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:10px 0;border-bottom:1px solid #ddd;font-size:14px}.companion-nav a{color:#205ab5;font-weight:700;text-decoration:none}.companion-nav a:hover{text-decoration:underline}.companion-nav strong{color:#555}
+.companion-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:10px 0;border-bottom:1px solid #ddd;font-size:14px}.companion-nav a{color:#205ab5;font-weight:700;text-decoration:none}.companion-nav a:hover{text-decoration:underline}.companion-nav strong{color:#555}.language-select{min-width:136px}
 .offline-section{border:1px solid #cfdae8;border-radius:14px;background:#f5f8fd;margin:20px 0;padding:16px}.offline-section h2{font-size:17px;margin:0 0 10px}.offline-section p{font-size:14px;line-height:1.6;margin:8px 0}.offline-section .offline-status{font-weight:700;color:#365a8d}.offline-section button{margin:8px 0}.offline-section[hidden]{display:none}.offline-section.is-ready .offline-status{color:#21633c}
 </style>
 <main>
-<nav class="companion-nav" aria-label="Project navigation"><a href="https://scical600.pages.dev/">← SciCal600</a><strong>SystemBussing · Auxiliary calculator</strong></nav>
-<label for="device" data-en="Device input (integer)" data-zh="裝置輸入（整數）">Device input (integer)</label><div class="inputrow"><input id="device" type="number" step="1" value="10" aria-label="Device input" data-aria-en="Device input" data-aria-zh="裝置輸入"><button id="confirm" class="primary" data-en="Confirm input" data-zh="確認輸入">Confirm input</button></div>
-<div class="toolbar"><button id="prev" data-en="Previous step" data-zh="上一步">Previous step</button><button id="next" class="primary" data-en="Next step" data-zh="下一步">Next step</button><span id="counter"></span><span class="spacer"></span><button id="play">Play</button><button id="reset" data-en="Reset" data-zh="重設">Reset</button><select id="speed" aria-label="Playback speed" data-aria-en="Playback speed" data-aria-zh="播放速度"><option value="1400">1×</option><option value="700">2×</option><option value="2800">0.5×</option></select><button id="language">繁體中文</button><button id="download" data-en="Download HTML" data-zh="下載 HTML">Download HTML</button></div>
+<nav class="companion-nav" aria-label="Project navigation" data-i18n-aria="projectNavigation"><a href="https://scical600.pages.dev/" data-i18n="backToSciCal">← SciCal600</a><strong data-i18n="auxiliaryCalculator">SystemBussing · Auxiliary calculator</strong></nav>
+<label for="device" data-i18n="deviceInput">Device input (integer)</label><div class="inputrow"><input id="device" type="number" step="1" value="10" aria-label="Device input" data-i18n-aria="deviceInputAria"><button id="confirm" class="primary" data-i18n="confirmInput">Confirm input</button></div>
+<div class="toolbar"><button id="prev" data-i18n="previousStep">Previous step</button><button id="next" class="primary" data-i18n="nextStep">Next step</button><span id="counter"></span><span class="spacer"></span><button id="play" data-i18n="play">Play</button><button id="reset" data-i18n="reset">Reset</button><select id="speed" aria-label="Playback speed" data-i18n-aria="playbackSpeed"><option value="1400">1×</option><option value="700">2×</option><option value="2800">0.5×</option></select><select id="language" class="language-select" aria-label="Language" data-i18n-aria="language"><option value="en">English</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option></select><button id="download" data-i18n="downloadHtml">Download HTML</button></div>
 <div id="stage" class="stage" aria-live="polite"></div>
-<div class="legend"><span><i></i>Data / address</span><span><i class="ctrl"></i>Control signal</span><span><i class="flow"></i>Current transfer</span><span>IN / OUT: teaching extensions</span></div>
+<div class="legend"><span><i></i><span data-i18n="dataAddress">Data / address</span></span><span><i class="ctrl"></i><span data-i18n="controlSignal">Control signal</span></span><span><i class="flow"></i><span data-i18n="currentTransfer">Current transfer</span></span><span data-i18n="teachingExtensions">IN / OUT: teaching extensions</span></div>
 <div id="explanation" aria-live="polite"></div>
-<div class="mobile-view-switch" role="group" aria-label="Display mode" data-aria-en="Display mode" data-aria-zh="顯示模式"><button id="readable-view" aria-pressed="true" data-en="Readable view" data-zh="易讀模式">Readable view</button><button id="circuit-view" aria-pressed="false" data-en="Circuit view" data-zh="完整電路圖">Circuit view</button></div>
-<section id="mobile-summary" class="mobile-summary" aria-label="Processor state" data-aria-en="Processor state" data-aria-zh="處理器狀態"></section>
-<div class="diagram-tools"><button id="zoom-out" aria-label="Zoom out of circuit" data-aria-en="Zoom out of circuit" data-aria-zh="縮小電路圖">−</button><button id="zoom-in" aria-label="Zoom into circuit" data-aria-en="Zoom into circuit" data-aria-zh="放大電路圖">＋</button><button id="zoom-fit" data-en="Fit diagram" data-zh="全圖">Fit diagram</button><button id="zoom-read" data-en="Readable size" data-zh="清晰大小">Readable size</button><span data-en="Scroll the circuit in any direction. Switch to Readable view for larger values." data-zh="可左右及上下滑動電路圖；切換易讀模式可查看較大的數值。">Scroll the circuit in any direction. Switch to Readable view for larger values.</span></div>
-<div class="diagram-viewport" id="diagram-viewport" role="region" aria-label="Scrollable CPU circuit diagram" data-aria-en="Scrollable CPU circuit diagram" data-aria-zh="可捲動的 CPU 電路圖" tabindex="0">
-<svg id="diagram" viewBox="0 0 1180 1090" role="img" aria-label="CPU registers, ALU, control unit, memory and input/output controllers"><defs><marker id="grey" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="#969696"/></marker><marker id="blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#2861b8"/></marker><marker id="teal" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="#35aaa5"/></marker></defs>
+<div class="mobile-view-switch" role="group" aria-label="Display mode" data-i18n-aria="displayMode"><button id="readable-view" aria-pressed="true" data-i18n="readableView">Readable view</button><button id="circuit-view" aria-pressed="false" data-i18n="circuitView">Circuit view</button></div>
+<section id="mobile-summary" class="mobile-summary" aria-label="Processor state" data-i18n-aria="processorState"></section>
+<div class="diagram-tools"><button id="zoom-out" aria-label="Zoom out of circuit" data-i18n-aria="zoomOut">−</button><button id="zoom-in" aria-label="Zoom into circuit" data-i18n-aria="zoomIn">＋</button><button id="zoom-fit" data-i18n="fitDiagram">Fit diagram</button><button id="zoom-read" data-i18n="readableSize">Readable size</button><span data-i18n="scrollCircuit">Scroll the circuit in any direction. Switch to Readable view for larger values.</span></div>
+<div class="diagram-viewport" id="diagram-viewport" role="region" aria-label="Scrollable CPU circuit diagram" data-i18n-aria="circuitDiagram" tabindex="0">
+<svg id="diagram" viewBox="0 0 1180 1090" role="img" aria-label="CPU registers, ALU, control unit, memory and input/output controllers" data-i18n-aria="circuitImage"><defs><marker id="grey" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="#969696"/></marker><marker id="blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#2861b8"/></marker><marker id="teal" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="#35aaa5"/></marker></defs>
 <rect x="16" y="16" width="740" height="1000" fill="white" class="box"/><text x="48" y="55" class="name">CPU</text>
 <g class="wire" marker-end="url(#grey)"><path d="M650 115 V80 H300 V265"/><path d="M437 555 H510 V230 H408 V265"/><path d="M355 402 V505"/><path d="M294 865 V816 H554 V160 H578"/><path d="M355 602 V816"/><path d="M105 865 V816"/><path d="M554 345 H780"/><path d="M905 337 H875"/><path d="M554 500 H850"/><path d="M717 602 H818"/><path d="M818 764 H717"/><path d="M717 764 H818"/><path d="M990 260 V290"/><path d="M383 920 H425"/></g>
 <path d="M105 816 H554 M554 602 H578 M554 764 H578" class="wire"/>
-<text x="195" y="796" font-size="17">System bus</text><text x="620" y="526" font-size="18">MMU</text><rect x="566" y="540" width="164" height="300" fill="none" class="wire" stroke-dasharray="8 5"/>
+<text id="system-bus-label" x="195" y="796" font-size="17">System bus</text><text x="620" y="526" font-size="18">MMU</text><rect x="566" y="540" width="164" height="300" fill="none" class="wire" stroke-dasharray="8 5"/>
 <g class="control"><path d="M480 970 V985 H105 V963"/><path d="M480 970 V985 H746 V195 H717"/><path d="M480 970 V985 H184 V335 H250"/><path d="M480 970 V985 H746 V625 H818"/><path d="M480 970 V985 H746 V570 H578"/><path d="M480 970 V985 H746 V790 H578"/><path d="M480 970 V985 H746 V415 H990 V385"/><path d="M480 970 V985 H746 V575 H990 V550"/></g>
 <g id="routes"></g><g id="blocks"></g><g id="overlays"></g>
-<g id="clockCpu" class="wire"><path d="M51 466 H69 V434 H100 V466 H125 V434 H156 V466 H175"/><text x="108" y="496" text-anchor="middle" fill="#252525" stroke="none" font-size="18">Clock</text></g>
-<g id="clockMemory" class="wire"><path d="M921 1038 H939 V1007 H970 V1038 H995 V1007 H1026 V1038 H1045"/><text x="985" y="1070" text-anchor="middle" fill="#252525" stroke="none" font-size="18">Clock</text></g>
+<g id="clockCpu" class="wire"><path d="M51 466 H69 V434 H100 V466 H125 V434 H156 V466 H175"/><text class="clock-label" x="108" y="496" text-anchor="middle" fill="#252525" stroke="none" font-size="18">Clock</text></g>
+<g id="clockMemory" class="wire"><path d="M921 1038 H939 V1007 H970 V1038 H995 V1007 H1026 V1038 H1045"/><text class="clock-label" x="985" y="1070" text-anchor="middle" fill="#252525" stroke="none" font-size="18">Clock</text></g>
 </svg>
 </div>
-<details><summary data-en="Instruction bits" data-zh="指令編碼">Instruction bits</summary><div id="binary"></div><p class="note" data-en="This project-defined teaching format stores the opcode in the upper 16 bits and the LOAD/STORE address in the lower 16 bits. IN/OUT use simulator-specific encodings." data-zh="本專案定義的教學格式將 opcode 放在高 16 位，LOAD/STORE 位址放在低 16 位；IN/OUT 採用模擬器自訂編碼。">This project-defined teaching format stores the opcode in the upper 16 bits and the LOAD/STORE address in the lower 16 bits. IN/OUT use simulator-specific encodings.</p></details>
-<details><summary data-en="Program &amp; memory" data-zh="程式與記憶體">Program &amp; memory</summary><p class="note" data-en="The default demo demonstrates a complete transfer sequence in 38 steps. Enter one instruction per line: IN R0, OUT ACC, LOAD [address], STORE [address], ADD, SUB, or NEG. Use DATA address value to initialize memory. Applying the program restarts execution from the first step." data-zh="預設示範以 38 個步驟呈現完整的資料傳送流程。每行一條指令，支援 IN R0、OUT ACC、LOAD [位址]、STORE [位址]、ADD、SUB、NEG。DATA 位址 值 可定義記憶體。確認後從第一步重新執行。">The default demo demonstrates a complete transfer sequence in 38 steps. Enter one instruction per line: IN R0, OUT ACC, LOAD [address], STORE [address], ADD, SUB, or NEG. Use DATA address value to initialize memory. Applying the program restarts execution from the first step.</p><textarea id="program" aria-label="Program editor" data-aria-en="Program editor" data-aria-zh="程式編輯器" spellcheck="false">IN R0
+<details><summary data-i18n="instructionBits">Instruction bits</summary><div id="binary"></div><p class="note" data-i18n="bitFormatNote">This project-defined teaching format stores the opcode in the upper 16 bits and the LOAD/STORE address in the lower 16 bits. IN/OUT use simulator-specific encodings.</p></details>
+<details><summary data-i18n="programMemory">Program &amp; memory</summary><p class="note" data-i18n="programNote">The default demo demonstrates a complete transfer sequence in 38 steps. Enter one instruction per line: IN R0, OUT ACC, LOAD [address], STORE [address], ADD, SUB, or NEG. Use DATA address value to initialize memory. Applying the program restarts execution from the first step.</p><textarea id="program" aria-label="Program editor" data-i18n-aria="programEditor" spellcheck="false">IN R0
 LOAD [200]
 ADD
 STORE [201]
 OUT ACC
 
-DATA 200 3</textarea><div class="settings"><button id="apply" data-en="Apply program" data-zh="套用程式">Apply program</button><button id="demo" data-en="Restore default demo" data-zh="還原預設示範">Restore default demo</button></div><div id="error" role="alert"></div></details>
-<p class="caption" data-en="This project-defined teaching architecture visualizes register, memory, ALU, I/O, and control-bus transfers. ADD computes ACC + R0; SUB computes ACC − R0; NEG computes −ACC. Arithmetic uses signed 32-bit integers." data-zh="本專案自訂的教學架構展示暫存器、記憶體、ALU、I/O 與控制匯流排的資料傳送。ADD 計算 ACC + R0；SUB 計算 ACC − R0；NEG 計算 −ACC。運算使用 32 位元有號整數。">This project-defined teaching architecture visualizes register, memory, ALU, I/O, and control-bus transfers. ADD computes ACC + R0; SUB computes ACC − R0; NEG computes −ACC. Arithmetic uses signed 32-bit integers.</p>
+DATA 200 3</textarea><div class="settings"><button id="apply" data-i18n="applyProgram">Apply program</button><button id="demo" data-i18n="restoreDemo">Restore default demo</button></div><div id="error" role="alert"></div></details>
+<p class="caption" data-i18n="architectureCaption">This project-defined teaching architecture visualizes register, memory, ALU, I/O, and control-bus transfers. ADD computes ACC + R0; SUB computes ACC − R0; NEG computes −ACC. Arithmetic uses signed 32-bit integers.</p>
 <section id="offline-app" class="offline-section" aria-labelledby="offline-title">
-<h2 id="offline-title" data-en="Offline app" data-zh="離線 App">Offline app</h2>
-<p id="offline-status" class="offline-status" role="status" aria-live="polite">Preparing offline app…</p>
-<button id="install-app" hidden>Install app</button>
+<h2 id="offline-title" data-i18n="offlineApp">Offline app</h2>
+<p id="offline-status" class="offline-status" role="status" aria-live="polite" data-i18n="preparingOffline">Preparing offline app…</p>
+<button id="install-app" hidden data-i18n="installApp">Install app</button>
 <p id="install-guide"></p>
 </section>
-<footer id="acknowledgements" lang="en" style="border-top:1px solid #ddd;padding:20px 0 28px;font-size:14px;line-height:1.7;color:#555">
-<strong>Acknowledgements</strong><br>
-Project-history thanks to <strong>sinx</strong> for an early program-design contribution and <strong>Prof. Bell LIU</strong> for the teaching context. No course slides, photographs, videos, or proprietary media are bundled.
-<br><a href="THIRD_PARTY_NOTICES.md">Copyright &amp; dependencies</a>
+<footer id="acknowledgements" style="border-top:1px solid #ddd;padding:20px 0 28px;font-size:14px;line-height:1.7;color:#555">
+<strong data-i18n="acknowledgements">Acknowledgements</strong><br>
+<span data-i18n="acknowledgementPrefix">Project-history thanks to</span> <strong>sinx</strong> <span data-i18n="acknowledgementMiddle">for an early program-design contribution and</span> <strong>Prof. Bell LIU</strong> <span data-i18n="acknowledgementSuffix">for the teaching context. No course slides, photographs, videos, or proprietary media are bundled.</span>
+<br><a href="THIRD_PARTY_NOTICES.md" data-i18n="copyrightDependencies">Copyright &amp; dependencies</a>
 </footer>
 </main>
-<nav class="mobile-dock" aria-label="Simulation step controls" data-aria-en="Simulation step controls" data-aria-zh="模擬步驟控制"><button id="mobile-prev">Previous</button><button id="mobile-play">Play</button><button id="mobile-next">Next →</button></nav>
+<nav class="mobile-dock" aria-label="Simulation step controls" data-i18n-aria="simulationControls"><button id="mobile-prev" data-i18n="previous">Previous</button><button id="mobile-play" data-i18n="play">Play</button><button id="mobile-next" data-i18n="next">Next →</button></nav>
 <script>
 // Deterministic snapshots make Previous step restore the complete machine, including memory.
 const OPCODES={ADD:1,SUB:2,NEG:3,LOAD:4,STORE:5};
 const DEMO='IN R0\nLOAD [200]\nADD\nSTORE [201]\nOUT ACC\n\nDATA 200 3';
+const I18N=window.SystemBussingI18n;
+const requestedLocale=new URLSearchParams(location.search).get('lang');
+let savedLocale='';
+try{savedLocale=localStorage.getItem('systembussing-language')||localStorage.getItem('cpu-simulator-language')||'';}catch{}
+let locale=I18N.locales.includes(requestedLocale)?requestedLocale:I18N.locales.includes(savedLocale)?savedLocale:'en';
+const t=(key,parameters)=>I18N.translate(locale,key,parameters);
+const appError=(key,parameters)=>new Error(t(key,parameters));
 function parseProgram(source){
  const memory={},program=[];
  for(const [i,line] of source.split('\n').entries()){
   const clean=line.replace(/[#;].*$/,'').trim().toUpperCase();if(!clean)continue;
   let m=clean.match(/^DATA\s+(\d+)\s+(-?\d+)$/);
-  if(m){let a=Number(m[1]),v=Number(m[2]);if(a>65535||!Number.isInteger(v)||v< -2147483648||v>2147483647)throw Error(`Line ${i+1}: invalid DATA address / signed 32-bit value`);if(a in memory)throw Error(`Line ${i+1}: duplicate DATA address`);memory[a]=v;continue;}
+  if(m){let a=Number(m[1]),v=Number(m[2]);if(a>65535||!Number.isInteger(v)||v< -2147483648||v>2147483647)throw appError('errorLineData',{line:i+1});if(a in memory)throw appError('errorDuplicateData',{line:i+1});memory[a]=v;continue;}
   m=clean.match(/^(LOAD|STORE)\s+\[?(\d+)\]?$/);
   let ins;
-  if(m){if(+m[2]>65535)throw Error(`Line ${i+1}: address must be 0–65535`);ins={op:m[1],addr:+m[2]};}
+  if(m){if(+m[2]>65535)throw appError('errorAddressRange',{line:i+1});ins={op:m[1],addr:+m[2]};}
   else if(/^(ADD|SUB|NEG)$/.test(clean))ins={op:clean};
   else if(clean==='IN R0')ins={op:'IN'};
   else if(clean==='OUT ACC')ins={op:'OUT'};
-  else throw Error(`Line ${i+1}: unknown instruction ${clean}`);
+  else throw appError('errorUnknownInstruction',{line:i+1,instruction:clean});
   program.push(ins);
  }
- if(!program.length||program.length>128)throw Error('Use 1–128 instructions.');
- program.forEach((ins,a)=>{if(a in memory)throw Error(`DATA ${a} overlaps program memory`);memory[a]=ins;});
+ if(!program.length||program.length>128)throw appError('errorInstructionCount');
+ program.forEach((ins,a)=>{if(a in memory)throw appError('errorOverlap',{address:a});memory[a]=ins;});
  // Display STORE targets as empty before the first write.
  program.forEach(ins=>{if(ins.op==='STORE'&&!(ins.addr in memory))memory[ins.addr]=null;});
  return {memory,program};
 }
 function insText(v){if(v===null||v===undefined)return '—';if(typeof v==='number'||typeof v==='string')return String(v);return v.op==='IN'?'IN R0':v.op==='OUT'?'OUT ACC':v.addr!==undefined?`${v.op} [${v.addr}]`:v.op;}
 function encode(ins){if(!ins||typeof ins!=='object'||!(ins.op in OPCODES))return null;return (((OPCODES[ins.op]<<16)|(ins.addr||0))>>>0);}
-function decode(word){if(typeof word==='object'&&word!==null)return {...word};if(typeof word!=='number')throw Error('No instruction at this address');const op=Object.keys(OPCODES).find(k=>OPCODES[k]===(word>>>16));if(!op)throw Error('Unknown opcode');return ['LOAD','STORE'].includes(op)?{op,addr:word&65535}:{op};}
+function decode(word){if(typeof word==='object'&&word!==null)return {...word};if(typeof word!=='number')throw appError('errorNoInstruction');const op=Object.keys(OPCODES).find(k=>OPCODES[k]===(word>>>16));if(!op)throw appError('errorUnknownOpcode');return ['LOAD','STORE'].includes(op)?{op,addr:word&65535}:{op};}
 function buildTrace(source,input){
- if(!Number.isInteger(input)||input< -2147483648||input>2147483647)throw Error('Input must be a signed 32-bit integer.');
- const {memory,program}=parseProgram(source);let s={pc:0,ir:null,mar:null,mdr:null,r0:null,acc:null,buf:null,out:null,cu:'Idle',rw:'',memory,input,alu:'Arithmetic',received:false};const trace=[];
- const push=(title,en,zh,paths=[],focus=[],signals=[],mem=null)=>{trace.push({...structuredClone(s),title,en,zh,paths,focus,signals,mem});};
- const need=(v,name)=>{if(typeof v!=='number')throw Error(`${name} has no numeric value`);return v;};
- push(`Ready · Device will supply ${input}`,'The first instruction is at address 0, so PC = 0; the device value has not yet reached R0.','第一條指令位於位址 0，因此 PC = 0；裝置輸入尚未進入 R0。');
+ if(!Number.isInteger(input)||input< -2147483648||input>2147483647)throw appError('errorInputRange');
+ const {memory,program}=parseProgram(source);let s={pc:0,ir:null,mar:null,mdr:null,r0:null,acc:null,buf:null,out:null,cu:'idle',rw:'',memory,input,alu:'arithmetic',received:false};const trace=[];
+ const push=(titleKey,descriptionKey,parameters={},paths=[],focus=[],signals=[],mem=null)=>{trace.push({...structuredClone(s),titleKey,descriptionKey,parameters,paths,focus,signals,mem});};
+ const need=(v,name)=>{if(typeof v!=='number')throw appError('errorNoNumericValue',{name});return v;};
+ push('readyTitle','readyDescription',{input});
  try{for(let count=0;count<program.length;count++){
- const address=s.pc;let ins=decode(s.memory[address]),label=insText(ins);s.cu='Control';s.rw='Read';s.mar=s.pc;
- push(`Fetch · ${label}`,'The control unit (CU) enables PC to send its address to MAR.','CU 發出控制訊號：PC 將下一條指令的位址送到 MAR。',['pcMar'],['PC','MAR','CU'],['PC','MAR']);
- s.mdr=structuredClone(s.memory[s.mar]);push('Fetch · Read instruction','MAR selects the instruction address; memory sends the instruction to MDR.','MAR 指定指令位址；記憶體將指令送到 MDR。',['marMemory','memoryMdr'],['MAR','MDR','Memory','CU'],['Memory','MDR'],s.mar);
- s.ir=decode(s.mdr);push('Fetch · Transfer the instruction to IR','MDR sends the complete instruction through the system bus to IR for decoding.','MDR 經系統匯流排將完整指令送至 IR，等待解碼。',['mdrIr'],['MDR','IR','CU'],['IR']);
- s.pc=(s.pc+1)&65535;push('Fetch · Increment PC','PC increases by one and now points to the next instruction.','PC 加 1，指向下一條指令。',[],['PC','CU'],['PC']);
- s.cu='Decode';push(`Decode · ${label}`,'The control unit reads the opcode in IR and selects the next actions for the components.','CU 讀取 IR 中的操作碼，確定各部件接下來執行的操作。',[],['IR','CU'],[]);
- s.cu='Control';
+ const address=s.pc;let ins=decode(s.memory[address]),label=insText(ins);s.cu='control';s.rw='read';s.mar=s.pc;
+ push('fetchTitle','fetchDescription',{instruction:label},['pcMar'],['PC','MAR','CU'],['PC','MAR']);
+ s.mdr=structuredClone(s.memory[s.mar]);push('fetchReadTitle','fetchReadDescription',{},['marMemory','memoryMdr'],['MAR','MDR','Memory','CU'],['Memory','MDR'],s.mar);
+ s.ir=decode(s.mdr);push('fetchTransferTitle','fetchTransferDescription',{},['mdrIr'],['MDR','IR','CU'],['IR']);
+ s.pc=(s.pc+1)&65535;push('fetchIncrementTitle','fetchIncrementDescription',{},[],['PC','CU'],['PC']);
+ s.cu='decode';push('decodeTitle','decodeDescription',{instruction:label},[],['IR','CU'],[]);
+ s.cu='control';
  if(ins.op==='IN'){
- s.received=true;push('Execute IN · Input controller','The device supplies an encoded integer to the input controller; it has reached the input controller, but not R0.','裝置將整數送至輸入控制器，此時尚未寫入 R0。',['deviceInput'],['Input','CU'],['Input']);
- s.buf=input;push('Execute IN · Buffer the input','The input controller stores the device value in BUF.','輸入控制器把裝置值存入緩衝暫存器 BUF。',['inputBuf'],['Input','BUF','CU'],['Input']);
- push('Execute IN · System bus','BUF places the input value on the system bus.','BUF 將輸入值送上系統匯流排。',['bufBus'],['BUF','CU'],['R0']);
- s.r0=s.buf;push('Execute IN · Transfer to R0','The system bus transfers the buffered input to R0.','系統匯流排將 BUF 中的輸入值傳送至 R0。',['bufR0'],['BUF','R0','CU'],['R0']);
+ s.received=true;push('executeInControllerTitle','executeInControllerDescription',{},['deviceInput'],['Input','CU'],['Input']);
+ s.buf=input;push('executeInBufferTitle','executeInBufferDescription',{},['inputBuf'],['Input','BUF','CU'],['Input']);
+ push('executeInBusTitle','executeInBusDescription',{},['bufBus'],['BUF','CU'],['R0']);
+ s.r0=s.buf;push('executeInR0Title','executeInR0Description',{},['bufR0'],['BUF','R0','CU'],['R0']);
  }else if(ins.op==='LOAD'){
- s.mar=ins.addr;s.rw='Read';push(`Execute LOAD · Select address ${ins.addr}`,'The operand in IR is sent to MAR, selecting the memory address. CU sets the R/W line to Read.','IR 中的低 16 位位址送到 MAR；CU 將 R/W 設為讀取。',['irMar'],['IR','MAR','CU'],['MAR','Memory']);
- s.mdr=need(s.memory[ins.addr],`Memory[${ins.addr}]`);push('Execute LOAD · Read the value',`MAR = ${ins.addr}; the value in Memory[${ins.addr}] passes through the data port into MDR.`,`MAR = ${ins.addr}；記憶體資料經資料埠進入 MDR。`,['marMemory','memoryMdr'],['MAR','MDR','Memory','CU'],['Memory','MDR'],ins.addr);
- s.acc=s.mdr;push('Execute LOAD · Transfer to ACC','CU signals MDR to move the data through the system bus to ACC.','CU 控制 MDR 經系統匯流排將資料送至 ACC。',['mdrAcc'],['MDR','ACC','CU'],['ACC']);
+ s.mar=ins.addr;s.rw='read';push('executeLoadAddressTitle','executeLoadAddressDescription',{address:ins.addr},['irMar'],['IR','MAR','CU'],['MAR','Memory']);
+ s.mdr=need(s.memory[ins.addr],`Memory[${ins.addr}]`);push('executeLoadReadTitle','executeLoadReadDescription',{address:ins.addr},['marMemory','memoryMdr'],['MAR','MDR','Memory','CU'],['Memory','MDR'],ins.addr);
+ s.acc=s.mdr;push('executeLoadAccTitle','executeLoadAccDescription',{},['mdrAcc'],['MDR','ACC','CU'],['ACC']);
  }else if(['ADD','SUB','NEG'].includes(ins.op)){
  const a=need(s.acc,'ACC'),b=ins.op==='NEG'?0:need(s.r0,'R0');s.acc=(ins.op==='ADD'?a+b:ins.op==='SUB'?a-b:-a)|0;s.alu=ins.op==='NEG'?`−(${a}) = ${s.acc}`:`${a} ${ins.op==='ADD'?'+':'−'} ${b} = ${s.acc}`;
- push(`Execute ${ins.op} · ALU → ACC`,`${s.alu}. The ALU result is stored in ACC; arithmetic wraps to a signed 32-bit integer.`,`${s.alu}。ALU 運算結果存入 ACC；結果按 32 位元有號整數處理。`,ins.op==='NEG'?['accAlu','aluAcc']:['r0Alu','accAlu','aluAcc'],['R0','ALU','ACC','CU'],['ALU']);
+ push('executeArithmeticTitle','executeArithmeticDescription',{operation:ins.op,calculation:s.alu},ins.op==='NEG'?['accAlu','aluAcc']:['r0Alu','accAlu','aluAcc'],['R0','ALU','ACC','CU'],['ALU']);
  }else if(ins.op==='STORE'){
- s.mar=ins.addr;s.rw='Write';push(`Execute STORE · Select address ${ins.addr}`,'The address in IR is sent to MAR, selecting the memory destination for the write.','IR 中的位址送到 MAR，確定寫入目標。',['irMar'],['IR','MAR','CU'],['MAR']);
- s.mdr=need(s.acc,'ACC');push('Execute STORE · ACC → MDR','ACC places its value on the system bus; MDR receives the data to be written.','ACC 經系統匯流排將待寫入的資料送至 MDR。',['accMdr'],['ACC','MDR','CU'],['MDR']);
- s.memory[s.mar]=s.mdr;push('Execute STORE · Write to memory',`MAR selects address ${s.mar}, MDR supplies ${s.mdr}, and the Write signal completes the transfer.`,`MAR 指向 ${s.mar}，MDR 提供 ${s.mdr}；寫入控制訊號使記憶體完成寫入。`,['marMemory','mdrMemory'],['MAR','MDR','Memory','CU'],['Memory','MDR'],s.mar);
+ s.mar=ins.addr;s.rw='write';push('executeStoreAddressTitle','executeStoreAddressDescription',{address:ins.addr},['irMar'],['IR','MAR','CU'],['MAR']);
+ s.mdr=need(s.acc,'ACC');push('executeStoreMdrTitle','executeStoreMdrDescription',{},['accMdr'],['ACC','MDR','CU'],['MDR']);
+ s.memory[s.mar]=s.mdr;push('executeStoreWriteTitle','executeStoreWriteDescription',{address:s.mar,value:s.mdr},['marMemory','mdrMemory'],['MAR','MDR','Memory','CU'],['Memory','MDR'],s.mar);
  }else if(ins.op==='OUT'){
- s.out=need(s.acc,'ACC');push('Execute OUT · Output controller','Teaching extension: ACC → System bus → Output controller. This is the end of the demo, not a CPU halt instruction.','教學擴充：ACC → 系統匯流排 → 輸出控制器。示範結束；這裡沒有額外的 HALT 指令。',['accOut'],['ACC','Output','CU'],['Output']);
+ s.out=need(s.acc,'ACC');push('executeOutTitle','executeOutDescription',{},['accOut'],['ACC','Output','CU'],['Output']);
  }
- }}catch(error){s.cu='Error';push('Stopped · '+error.message,error.message,'執行停止：'+error.message,[],['CU']);}
+ }}catch(error){s.cu='errorState';push('stoppedTitle','errorExecutionStopped',{message:error.message},[],['CU']);}
  return trace;
 }
 const GEOMETRY={R0:[578,115,139,97],ALU:[250,265,203,137],ACC:[272,505,165,97],MAR:[578,558,139,97],MDR:[578,710,139,118],PC:[48,865,114,95],IR:[206,865,177,110],BUF:[780,290,95,95],Input:[905,290,240,95],Output:[850,445,295,105],Memory:[818,570,327,391]};
 const ROUTES={pcMar:'M105 865 V816 H554 V607 H578',marMemory:'M717 607 H818',memoryMdr:'M818 769 H717',mdrMemory:'M717 769 H818',mdrIr:'M578 769 H554 V816 H294 V865',irMar:'M294 865 V816 H554 V607 H578',mdrAcc:'M578 769 H554 V816 H355 V602',accMdr:'M355 602 V816 H554 V769 H578',r0Alu:'M647 115 V80 H300 V265',accAlu:'M437 555 H510 V230 H408 V265',aluAcc:'M355 402 V505',deviceInput:'M1025 260 V290',inputBuf:'M905 337 H875',bufBus:'M780 337 H554 V816 H355',bufR0:'M780 337 H554 V162 H578',accOut:'M355 602 V816 H554 V500 H850'};
 const SIGNALS={PC:'M480 970 V985 H105 V963',MAR:'M480 970 V985 H746 V640 H717',MDR:'M480 970 V985 H746 V810 H717',IR:'M425 920 H383',R0:'M480 970 V985 H746 V195 H717',ALU:'M480 970 V985 H184 V335 H250',ACC:'M480 970 V985 H184 V555 H272',Memory:'M480 970 V985 H746 V670 H818',Input:'M480 970 V985 H746 V410 H1025 V385',Output:'M480 970 V985 H746 V567 H998 V550'};
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let trace=buildTrace(DEMO,10),index=0,chinese=false,timer=null,source=DEMO;
-try{chinese=localStorage.getItem('cpu-simulator-language')==='zh-Hant';}catch{}
+let trace=buildTrace(DEMO,10),index=0,timer=null,source=DEMO;
 
 const $=id=>document.getElementById(id);
 function block(id,label,value,fill='#ffeaaa'){
@@ -143,41 +151,45 @@ function block(id,label,value,fill='#ffeaaa'){
  return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" class="box ${focus?'focus':''}"/><text x="${x+w/2}" y="${y+34}" text-anchor="middle" class="name">${label}</text><text text-anchor="middle" class="value">${lines.map((line,i)=>`<tspan x="${x+w/2}" y="${y+65+i*21}">${esc(line)}</tspan>`).join('')}</text></g>`;
 }
 
-const TRANSFER_LABELS={pcMar:'PC → MAR',marMemory:'MAR → Memory (address)',memoryMdr:'Memory → MDR',mdrMemory:'MDR → Memory',mdrIr:'MDR → System bus → IR',irMar:'IR (operand) → MAR',mdrAcc:'MDR → System bus → ACC',accMdr:'ACC → System bus → MDR',r0Alu:'R0 → ALU',accAlu:'ACC → ALU',aluAcc:'ALU → ACC',deviceInput:'Device → Input controller',inputBuf:'Input controller → BUF',bufBus:'BUF → System bus',bufR0:'BUF → System bus → R0',accOut:'ACC → System bus → Output controller'};
+const TRANSFER_LABELS={pcMar:'transferPcMar',marMemory:'transferMarMemory',memoryMdr:'transferMemoryMdr',mdrMemory:'transferMdrMemory',mdrIr:'transferMdrIr',irMar:'transferIrMar',mdrAcc:'transferMdrAcc',accMdr:'transferAccMdr',r0Alu:'transferR0Alu',accAlu:'transferAccAlu',aluAcc:'transferAluAcc',deviceInput:'transferDeviceInput',inputBuf:'transferInputBuf',bufBus:'transferBufBus',bufR0:'transferBufR0',accOut:'transferAccOut'};
+const stateText=value=>['idle','control','decode','arithmetic','errorState','read','write'].includes(value)?t(value):value;
 function renderMobile(s){
- const card=(id,value,type='')=>`<div class="register-card ${type} ${s.focus.includes(id)?'is-active':''}"><div class="register-label">${esc(id)}${s.focus.includes(id)?'<span class="active-label">ACTIVE</span>':''}</div><span class="register-value ${typeof value==='object'||String(value).length>10?'instruction':''}">${esc(value===null||value===undefined?'—':insText(value))}</span></div>`;
+ const card=(id,value,type='',label=id)=>`<div class="register-card ${type} ${s.focus.includes(id)?'is-active':''}"><div class="register-label">${esc(label)}${s.focus.includes(id)?`<span class="active-label">${esc(t('active'))}</span>`:''}</div><span class="register-value ${typeof value==='object'||String(value).length>10?'instruction':''}">${esc(value===null||value===undefined?'—':insText(value))}</span></div>`;
  const rows=Object.entries(s.memory).sort((a,b)=>Number(a[0])-Number(b[0])).map(([address,value])=>`<tr class="${Number(address)===s.mem?'is-current':''}"><td>${address}</td><td>${esc(insText(value))}</td></tr>`).join('');
- $('mobile-summary').innerHTML=`<section class="transfer-panel"><h2>${chinese?'目前資料傳輸':'Current transfer'}</h2>${s.paths.length?s.paths.map(p=>`<div class="transfer-line">${esc(TRANSFER_LABELS[p])}</div>`).join(''):`<div class="transfer-line">${esc(s.cu==='Idle'?(chinese?'準備就緒，點下一步開始。':'Ready. Tap Next to begin.'):s.cu==='Decode'?(chinese?'CU 正在解碼 IR 中的指令。':'CU decodes the instruction in IR.'):(chinese?'更新控制狀態。':'Update control state.'))}</div>`}</section>
- <h2 class="mobile-section-title">CPU · ${chinese?'暫存器':'Registers'}</h2><div class="register-grid">${card('PC',s.pc)}${card('IR',s.ir)}${card('R0',s.r0)}${card('ACC',s.acc)}${card('MAR',s.mar)}${card('MDR',s.mdr)}${card('CU',s.cu,'control-card')}${card('ALU',s.alu,'alu-card')}</div>
- <h2 class="mobile-section-title">Input / Output</h2><div class="register-grid">${card('BUF',s.buf)}${card('Output',s.out,'io-card')}</div>
- <h2 class="mobile-section-title">Memory ${s.rw?'· '+esc(s.rw):''}</h2><div class="memory-panel"><div class="memory-scroll" tabindex="0" aria-label="${chinese?'記憶體資料表':'Memory table'}"><table class="memory-table"><thead><tr><th>Address</th><th>Instruction / Data</th></tr></thead><tbody>${rows}</tbody></table></div><p class="memory-note">${chinese?'藍色列表示目前存取的位址。':'The blue row marks the current memory access.'}</p></div>`;
+ $('mobile-summary').innerHTML=`<section class="transfer-panel"><h2>${esc(t('currentTransfer'))}</h2>${s.paths.length?s.paths.map(p=>`<div class="transfer-line">${esc(t(TRANSFER_LABELS[p]))}</div>`).join(''):`<div class="transfer-line">${esc(s.cu==='idle'?t('readyTapNext'):s.cu==='decode'?t('cuDecodes'):t('updateControlState'))}</div>`}</section>
+ <h2 class="mobile-section-title">CPU · ${esc(t('registers'))}</h2><div class="register-grid">${card('PC',s.pc)}${card('IR',s.ir)}${card('R0',s.r0)}${card('ACC',s.acc)}${card('MAR',s.mar)}${card('MDR',s.mdr)}${card('CU',stateText(s.cu),'control-card')}${card('ALU',stateText(s.alu),'alu-card')}</div>
+ <h2 class="mobile-section-title">${esc(t('inputOutput'))}</h2><div class="register-grid">${card('BUF',s.buf)}${card('Output',s.out,'io-card',t('outputController'))}</div>
+ <h2 class="mobile-section-title">${esc(t('memory'))} ${s.rw?'· '+esc(stateText(s.rw)):''}</h2><div class="memory-panel"><div class="memory-scroll" tabindex="0" aria-label="${esc(t('memoryTable'))}"><table class="memory-table"><thead><tr><th>${esc(t('address'))}</th><th>${esc(t('instructionData'))}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="memory-note">${esc(t('blueRow'))}</p></div>`;
  $('mobile-prev').disabled=index===0;$('mobile-next').disabled=index===trace.length-1;
- $('mobile-prev').textContent=chinese?'上一步':'Previous';$('mobile-next').textContent=chinese?'下一步 →':'Next →';$('mobile-play').textContent=timer?(chinese?'暫停':'Pause'):(chinese?'播放':'Play');
+ $('mobile-prev').textContent=t('previous');$('mobile-next').textContent=t('next');$('mobile-play').textContent=timer?t('pause'):t('play');
 }
 
 function renderLanguage(){
- document.documentElement.lang=chinese?'zh-Hant':'en';
- document.querySelectorAll('[data-en]').forEach(el=>{el.textContent=el.getAttribute(chinese?'data-zh':'data-en');});
- document.querySelectorAll('[data-aria-en]').forEach(el=>{el.setAttribute('aria-label',el.getAttribute(chinese?'data-aria-zh':'data-aria-en'));});
- $('counter').setAttribute('data-step-label',chinese?'步驟 ':'Step ');
- $('language').setAttribute('aria-label',chinese?'Switch to English':'Switch to Traditional Chinese');
- $('language').lang=chinese?'en':'zh-Hant';
- $('play').textContent=timer?(chinese?'暫停':'Pause'):(chinese?'播放':'Play');
+ document.documentElement.lang=locale;
+ document.title=t('documentTitle');
+ $('app-description').setAttribute('content',t('metaDescription'));
+ document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+ document.querySelectorAll('[data-i18n-aria]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.i18nAria));});
+ $('counter').setAttribute('data-step-label',t('stepPrefix'));
+ $('language').value=locale;
+ $('play').textContent=timer?t('pause'):t('play');
+ $('system-bus-label').textContent=t('systemBus');
+ document.querySelectorAll('.clock-label').forEach(label=>{label.textContent=t('clock');});
 }
-function render(){const s=trace[index];renderLanguage();renderMobile(s);$('counter').textContent=`${index+1} / ${trace.length}`;$('prev').disabled=index===0;$('next').disabled=index===trace.length-1;$('stage').textContent=s.title;$('explanation').textContent=chinese?s.zh:s.en;$('language').textContent=chinese?'English':'繁體中文';
- let blocks='';for(const id of ['R0','ACC','PC','MAR','MDR','IR','BUF']){let v=id==='R0'?s.r0:id==='ACC'?s.acc:id==='PC'?s.pc:id==='MAR'?s.mar:id==='MDR'?s.mdr:id==='IR'?s.ir:s.buf;let text=v==null?(id==='R0'||id==='ACC'?'Not set':'—'):insText(v);if(id==='IR'||id==='MDR')text=text.replace(' [','\n[');blocks+=block(id,id,text);}
- blocks+=block('ALU','ALU',s.alu,'#dfccfa')+block('Input','Input controller',s.received?`Received: ${s.input}`:'Awaiting input','white')+block('Output','Output controller',`Output: ${s.out??'—'}`,'white');
- blocks+=`<g><circle cx="480" cy="920" r="53" fill="#f4c2c2" class="box ${s.focus.includes('CU')?'focus':''}"/><text x="480" y="902" text-anchor="middle" class="name">CU</text><text x="480" y="936" text-anchor="middle" class="value">${esc(s.cu)}</text></g>`;
+function render(){const s=trace[index];renderLanguage();renderMobile(s);$('counter').textContent=`${index+1} / ${trace.length}`;$('prev').disabled=index===0;$('next').disabled=index===trace.length-1;$('stage').textContent=t(s.titleKey,s.parameters);$('explanation').textContent=t(s.descriptionKey,s.parameters);
+ let blocks='';for(const id of ['R0','ACC','PC','MAR','MDR','IR','BUF']){let v=id==='R0'?s.r0:id==='ACC'?s.acc:id==='PC'?s.pc:id==='MAR'?s.mar:id==='MDR'?s.mdr:id==='IR'?s.ir:s.buf;let text=v==null?(id==='R0'||id==='ACC'?t('notSet'):'—'):insText(v);if(id==='IR'||id==='MDR')text=text.replace(' [','\n[');blocks+=block(id,id,text);}
+ blocks+=block('ALU','ALU',stateText(s.alu),'#dfccfa')+block('Input',t('inputController'),s.received?t('received',{value:s.input}):t('awaitingInput'),'white')+block('Output',t('outputController'),t('outputLabel',{value:s.out??'—'}),'white');
+ blocks+=`<g><circle cx="480" cy="920" r="53" fill="#f4c2c2" class="box ${s.focus.includes('CU')?'focus':''}"/><text x="480" y="902" text-anchor="middle" class="name">CU</text><text x="480" y="936" text-anchor="middle" class="value">${esc(stateText(s.cu))}</text></g>`;
  let entries=Object.entries(s.memory).sort((a,b)=>+a[0]-+b[0]);const shown=entries.length<=8?entries:entries.filter(([a])=>+a===s.mem||+a===s.pc||+a===s.mar||(+a<5)).slice(0,8);let gap=Math.min(43,290/Math.max(shown.length,1));
- blocks+=`<rect x="818" y="570" width="327" height="391" fill="#f5d3be" class="box ${s.focus.includes('Memory')?'focus':''}"/><text x="981" y="608" text-anchor="middle" class="name">Memory</text>`;
- shown.forEach(([a,v],i)=>{let y=650+i*gap;if(+a===s.mem)blocks+=`<rect x="827" y="${y-25}" width="309" height="37" fill="#dbe8f9"/>`;blocks+=`<text x="835" y="${y}" class="value">${a}</text><text x="1128" y="${y}" text-anchor="end" class="value">${esc(insText(v))}</text>`;});if(shown.length<entries.length)blocks+=`<text x="835" y="947" font-size="12">${entries.length} cells · showing active addresses</text>`;
- $('blocks').innerHTML=blocks;$('routes').innerHTML=s.paths.map(p=>`<path d="${ROUTES[p]}" class="active"/>`).join('');$('overlays').innerHTML=s.signals.map(p=>`<path d="${SIGNALS[p]}" class="signal"/>`).join('')+`<text x="1025" y="240" text-anchor="middle" font-size="18">Device input: ${s.input}</text><text x="827" y="274" text-anchor="middle" font-size="18">${s.buf===null?'Empty':'Read'}</text>`+(s.rw&&s.focus.includes('Memory')?`<text x="777" y="655" text-anchor="middle" font-size="17">${s.rw}</text>`:'');
+ blocks+=`<rect x="818" y="570" width="327" height="391" fill="#f5d3be" class="box ${s.focus.includes('Memory')?'focus':''}"/><text x="981" y="608" text-anchor="middle" class="name">${esc(t('memory'))}</text>`;
+ shown.forEach(([a,v],i)=>{let y=650+i*gap;if(+a===s.mem)blocks+=`<rect x="827" y="${y-25}" width="309" height="37" fill="#dbe8f9"/>`;blocks+=`<text x="835" y="${y}" class="value">${a}</text><text x="1128" y="${y}" text-anchor="end" class="value">${esc(insText(v))}</text>`;});if(shown.length<entries.length)blocks+=`<text x="835" y="947" font-size="12">${esc(t('cellsShowing',{count:entries.length}))}</text>`;
+ $('blocks').innerHTML=blocks;$('routes').innerHTML=s.paths.map(p=>`<path d="${ROUTES[p]}" class="active"/>`).join('');$('overlays').innerHTML=s.signals.map(p=>`<path d="${SIGNALS[p]}" class="signal"/>`).join('')+`<text x="1025" y="240" text-anchor="middle" font-size="18">${esc(t('deviceInputValue',{value:s.input}))}</text><text x="827" y="274" text-anchor="middle" font-size="18">${esc(s.buf===null?t('empty'):t('read'))}</text>`+(s.rw&&s.focus.includes('Memory')?`<text x="777" y="655" text-anchor="middle" font-size="17">${esc(stateText(s.rw))}</text>`:'');
  for(const id of ['clockCpu','clockMemory']){$(id).style.stroke=(id==='clockCpu'?index>0:s.focus.includes('Memory'))?'#2861b8':'#969696';$(id).style.strokeWidth=(id==='clockCpu'?index>0:s.focus.includes('Memory'))?'4':'2';}
- const bits=encode(s.ir);$('binary').textContent=bits===null?(s.ir?'IN / OUT: teaching extension · no slide-defined opcode':'IR: —'):`IR: ${insText(s.ir)}\n${bits.toString(2).padStart(32,'0').match(/.{4}/g).join(' ')}\nOpcode: ${OPCODES[s.ir.op]}    Operand: ${s.ir.addr??0}`;
+ const bits=encode(s.ir);$('binary').textContent=bits===null?(s.ir?t('binaryTeachingExtension'):'IR: —'):`IR: ${insText(s.ir)}\n${bits.toString(2).padStart(32,'0').match(/.{4}/g).join(' ')}\n${t('binaryOpcode')}: ${OPCODES[s.ir.op]}    ${t('binaryOperand')}: ${s.ir.addr??0}`;
 }
-function stop(){if(timer)clearInterval(timer);timer=null;$('play').textContent=chinese?'播放':'Play';$('mobile-play').textContent=chinese?'播放':'Play';}
+function stop(){if(timer)clearInterval(timer);timer=null;$('play').textContent=t('play');$('mobile-play').textContent=t('play');}
 function next(){if(index<trace.length-1){index++;render();}if(index===trace.length-1)stop();}
-function reload(newSource=source){try{let nextTrace=buildTrace(newSource,Number($('device').value));if($('device').value.trim()==='')throw Error('Enter an integer.');stop();source=newSource;trace=nextTrace;index=0;$('error').textContent='';render();}catch(e){$('error').textContent=e.message;document.querySelectorAll('details')[1].open=true;}}
+function reload(newSource=source){try{let nextTrace=buildTrace(newSource,Number($('device').value));if($('device').value.trim()==='')throw appError('errorEnterInteger');stop();source=newSource;trace=nextTrace;index=0;$('error').textContent='';render();}catch(e){$('error').textContent=e.message;document.querySelectorAll('details')[1].open=true;}}
 let diagramWidth=920;
 function setView(circuit){document.body.classList.toggle('circuit-view',circuit);$('readable-view').setAttribute('aria-pressed',String(!circuit));$('circuit-view').setAttribute('aria-pressed',String(circuit));}
 function setZoom(width){diagramWidth=Math.max(600,Math.min(1600,width));document.body.classList.remove('diagram-fit');$('diagram').style.setProperty('--diagram-width',diagramWidth+'px');$('zoom-out').disabled=diagramWidth===600;$('zoom-in').disabled=diagramWidth===1600;}
@@ -186,30 +198,37 @@ $('mobile-prev').onclick=()=>$('prev').click();$('mobile-next').onclick=()=>$('n
 $('download').onclick=()=>{
  const copy=document.documentElement.cloneNode(true);
  copy.querySelectorAll('link[rel="manifest"],link[rel="apple-touch-icon"]').forEach(el=>el.remove());
+ const externalI18n=copy.querySelector('script[src="./i18n.js"]');
+ if(externalI18n){
+  const inlineI18n=copy.ownerDocument.createElement('script');
+  const data=JSON.stringify({languageNames:I18N.languageNames,translations:I18N.translations});
+  inlineI18n.textContent=`"use strict";(()=>{const data=${data};const format=(template,parameters={})=>String(template).replace(/\\{(\\w+)\\}/g,(match,key)=>Object.prototype.hasOwnProperty.call(parameters,key)?String(parameters[key]):match);window.SystemBussingI18n=Object.freeze({languageNames:Object.freeze(data.languageNames),locales:Object.freeze(Object.keys(data.languageNames)),translations:Object.freeze(data.translations),translate:(locale,key,parameters)=>format((data.translations[locale]||data.translations.en)[key]??data.translations.en[key]??key,parameters)});})();`;
+  externalI18n.replaceWith(inlineI18n);
+ }
  const html='<!doctype html>\n'+copy.outerHTML;
  const url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
  const link=document.createElement('a');link.href=url;link.download='SystemBussing-CPU-Simulator.html';
  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 };
-$('next').onclick=()=>{stop();next();};$('prev').onclick=()=>{stop();if(index>0){index--;render();}};$('reset').onclick=()=>{stop();index=0;render();};$('confirm').onclick=()=>reload();$('device').onkeydown=e=>{if(e.key==='Enter')reload();};$('apply').onclick=()=>reload($('program').value);$('demo').onclick=()=>{$('program').value=DEMO;reload(DEMO);};$('language').onclick=()=>{chinese=!chinese;try{localStorage.setItem('cpu-simulator-language',chinese?'zh-Hant':'en');}catch{}render();};$('play').onclick=()=>{if(timer){stop();return;}if(index===trace.length-1)index=0;timer=setInterval(next,Number($('speed').value));render();};$('speed').onchange=()=>{if(timer){clearInterval(timer);timer=setInterval(next,Number($('speed').value));}};document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight')$('next').click();if(e.key==='ArrowLeft')$('prev').click();});render();
+$('next').onclick=()=>{stop();next();};$('prev').onclick=()=>{stop();if(index>0){index--;render();}};$('reset').onclick=()=>{stop();index=0;render();};$('confirm').onclick=()=>reload();$('device').onkeydown=e=>{if(e.key==='Enter')reload();};$('apply').onclick=()=>reload($('program').value);$('demo').onclick=()=>{$('program').value=DEMO;reload(DEMO);};$('language').onchange=()=>{const selected=$('language').value;if(!I18N.locales.includes(selected))return;locale=selected;try{localStorage.setItem('systembussing-language',locale);localStorage.removeItem('cpu-simulator-language');}catch{}if(location.protocol!=='file:'){const url=new URL(location.href);if(locale==='en')url.searchParams.delete('lang');else url.searchParams.set('lang',locale);history.replaceState(null,'',url);}render();window.dispatchEvent(new CustomEvent('systembussing-languagechange',{detail:{locale}}));};$('play').onclick=()=>{if(timer){stop();return;}if(index===trace.length-1)index=0;timer=setInterval(next,Number($('speed').value));render();};$('speed').onchange=()=>{if(timer){clearInterval(timer);timer=setInterval(next,Number($('speed').value));}};document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight')$('next').click();if(e.key==='ArrowLeft')$('prev').click();});window.SystemBussingApp=Object.freeze({getLocale:()=>locale,getStep:()=>index,getStepCount:()=>trace.length});render();
 </script>
 
 <script>
 (() => {
  const panel=document.getElementById('offline-app'), status=document.getElementById('offline-status');
  const guide=document.getElementById('install-guide'), button=document.getElementById('install-app');
- const text=(en,zh)=>document.documentElement.lang==='zh-Hant'?zh:en;
+ const text=key=>window.SystemBussingI18n.translate(document.documentElement.lang,key);
  const local=location.protocol==='file:', installed=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
  let ready=local, failed=false, installing=null;
  function refresh(){
   panel.classList.toggle('is-ready',ready);
-  status.textContent=local?text('Local version · no internet required.','本機版本 · 無需連線。'):ready?text('Saved on this device · ready for offline use.','已儲存在此裝置 · 可離線使用。'):failed?text('Offline saving did not finish. Reopen while connected to try again.','離線儲存尚未完成，請連線後重新開啟再試。'):text('Saving the app for offline use…','正在儲存離線 App…');
+  status.textContent=local?text('localVersion'):ready?text('savedOffline'):failed?text('offlineFailed'):text('savingOffline');
   button.hidden=local||installed()||!ready;
-  button.textContent=text(installing?'Install app':'How to install','安裝 App');
+  button.textContent=text(installing?'installApp':'howToInstall');
   guide.hidden=local;
-  guide.textContent=installed()?text('Open this app from your Home Screen, even without an internet connection.','日後可從主畫面開啟，即使沒有網路也能使用。'):text('iPhone / iPad: open in Safari, tap Share → Add to Home Screen → Add. Wait until the status above says it is ready. Mac / Android: use your browser’s Install app or Add to Home Screen option.','iPhone／iPad：用 Safari 開啟，點「分享」→「加入主畫面」→「加入」。請等上方顯示可離線使用。Mac／Android：使用瀏覽器的「安裝 App」或「加入主畫面」。');
+  guide.textContent=installed()?text('installedGuide'):text('installGuide');
  }
- document.getElementById('language').addEventListener('click',refresh);
+ window.addEventListener('systembussing-languagechange',refresh);
  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installing=event;refresh();});
  window.addEventListener('appinstalled',()=>{installing=null;refresh();});
  button.addEventListener('click',async()=>{

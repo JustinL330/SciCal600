@@ -1,7 +1,7 @@
 "use strict";
 
-const CACHE_NAME = "scical600-systembussing-v1";
-const OFFLINE_FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
+const CACHE_NAME = "scical600-systembussing-v2";
+const OFFLINE_FILES = ["./", "./index.html", "./i18n.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_FILES)));

@@ -53,7 +53,7 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   assert.match(redirects, /\/systembussing \/systembussing\/ 301/);
   assert.match(html, /href="https:\/\/lmc\.scical600\.pages\.dev\/"/);
   assert.match(html, /href="https:\/\/systembussing\.scical600\.pages\.dev\/"/);
-  for (const auxiliaryFile of ["lmc/index.html", "systembussing/index.html", "systembussing/sw.js", "systembussing/manifest.webmanifest", "systembussing/icon.svg"]) {
+  for (const auxiliaryFile of ["lmc/index.html", "systembussing/index.html", "systembussing/i18n.js", "systembussing/sw.js", "systembussing/manifest.webmanifest", "systembussing/icon.svg"]) {
     assert.ok(build.includes(`"${auxiliaryFile}"`), `${auxiliaryFile} in build manifest`);
   }
   const deploymentWorkflow = read(".github/workflows/cloudflare-pages.yml");
@@ -364,7 +364,7 @@ test("keeps Android system-bar content legible over the edge-to-edge dark shell"
 });
 
 test("does not ship known client-side secret patterns", () => {
-  const client = ["index.html","linear-algebra.js","linear-algebra-i18n.js","statistics-calculator.js","probability-calculator.js","statistics-probability-i18n.js","additional-locales.js","computer-calculator.js","economics-calculator.js","computer-i18n.js","economics-i18n.js"].map(read).join("\n");
+  const client = ["index.html","linear-algebra.js","linear-algebra-i18n.js","statistics-calculator.js","probability-calculator.js","statistics-probability-i18n.js","additional-locales.js","computer-calculator.js","economics-calculator.js","computer-i18n.js","economics-i18n.js","systembussing/index.html","systembussing/i18n.js"].map(read).join("\n");
   assert.doesNotMatch(client, /api[_-]?key\s*[:=]\s*["'][A-Za-z0-9_-]{12,}/i);
   assert.doesNotMatch(client, /ExchangeRate-API.*key=/i);
 });
