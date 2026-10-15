@@ -62,6 +62,18 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   for (const easterEggAsset of ["love-heart.js", "love-heart.c"]) {
     assert.ok(build.includes(`"${easterEggAsset}"`), `${easterEggAsset} in build manifest`);
   }
+  assert.match(html, /id="theme-toggle"[^>]*data-i18n-aria="themeToggleAria"/);
+  assert.match(html, /href="bright-theme\.css"/);
+  assert.ok(build.includes('"bright-theme.css"'), "bright theme stylesheet in build manifest");
+  const themeSource = read("site-ui.js");
+  for (const language of ["en-GB", "zh-Hant", "zh-Hans", "yue-Hant-HK", "ja", "ko", "fr", "de", "es", "ms", "ar", "th"]) {
+    assert.match(themeSource, new RegExp(`(?:"${language}"|${language}): \\{ brightMode:`), `${language} has explicit theme labels`);
+  }
+  const brightTheme = read("bright-theme.css");
+  assert.match(brightTheme, /html\[data-theme="bright"\]/);
+  assert.match(brightTheme, /\.computer-tool-card/);
+  assert.match(brightTheme, /\.matrix-workspace/);
+  assert.match(brightTheme, /\.panel-dialog/);
   assert.match(html, /id="love-egg-button"/);
   assert.match(html, /id="love-egg-dialog"/);
   assert.match(html, /src="love-heart\.js"/);

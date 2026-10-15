@@ -1,19 +1,27 @@
 <!doctype html>
-<html lang="en-GB">
+<html lang="en-GB" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#071019" />
+    <meta id="theme-colour" name="theme-color" content="#071019" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="description" content="SciCal600 Smart Calculator — scientific and linear algebra calculation tools for the web." />
     <title>SciCal600 — Smart Calculator</title>
+    <script>
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem("scical600.theme") === "bright" ? "bright" : "dark";
+      } catch (_error) {
+        document.documentElement.dataset.theme = "dark";
+      }
+    </script>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="computer-calculator.css" />
     <link rel="stylesheet" href="economics-calculator.css" />
     <link rel="stylesheet" href="statistics-probability.css" />
     <link rel="stylesheet" href="android-download.css" />
+    <link rel="stylesheet" href="bright-theme.css" />
   </head>
   <body class="is-about-view">
     <div class="page-glow page-glow--one" aria-hidden="true"></div>
@@ -37,6 +45,10 @@
         </div>
 
         <div class="app-bar__actions">
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" data-i18n-aria="themeToggleAria">
+            <span class="theme-toggle__icon" data-theme-icon aria-hidden="true">☀</span>
+            <span data-theme-label>Bright mode</span>
+          </button>
           <button class="interface-mode-toggle" id="interface-mode-toggle" type="button" aria-pressed="false" data-i18n-aria="interfaceModeAria">
             <span class="interface-mode-toggle__dot" aria-hidden="true"></span>
             <span data-interface-mode-label data-i18n="webMode">Web mode</span>

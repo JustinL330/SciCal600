@@ -151,6 +151,25 @@
     ui[language] = { ...ui[fallback], ...(ui[language] || {}), ...dictionary };
   });
 
+  const themeTranslations = {
+    "en-GB": { brightMode: "Bright mode", darkMode: "Dark mode", themeToggleAria: "Switch between bright and dark themes" },
+    "zh-Hant": { brightMode: "明亮模式", darkMode: "深色模式", themeToggleAria: "切換明亮與深色主題" },
+    "zh-Hans": { brightMode: "明亮模式", darkMode: "深色模式", themeToggleAria: "切换明亮与深色主题" },
+    "yue-Hant-HK": { brightMode: "光亮模式", darkMode: "深色模式", themeToggleAria: "切換光亮同深色主題" },
+    ja: { brightMode: "ライトモード", darkMode: "ダークモード", themeToggleAria: "ライトテーマとダークテーマを切り替える" },
+    ko: { brightMode: "밝은 모드", darkMode: "어두운 모드", themeToggleAria: "밝은 테마와 어두운 테마 전환" },
+    fr: { brightMode: "Mode clair", darkMode: "Mode sombre", themeToggleAria: "Basculer entre les thèmes clair et sombre" },
+    de: { brightMode: "Heller Modus", darkMode: "Dunkler Modus", themeToggleAria: "Zwischen hellem und dunklem Design wechseln" },
+    es: { brightMode: "Modo claro", darkMode: "Modo oscuro", themeToggleAria: "Cambiar entre los temas claro y oscuro" },
+    ms: { brightMode: "Mod cerah", darkMode: "Mod gelap", themeToggleAria: "Tukar antara tema cerah dan gelap" },
+    ar: { brightMode: "الوضع الفاتح", darkMode: "الوضع الداكن", themeToggleAria: "التبديل بين السمة الفاتحة والداكنة" },
+    th: { brightMode: "โหมดสว่าง", darkMode: "โหมดมืด", themeToggleAria: "สลับระหว่างธีมสว่างและธีมมืด" },
+  };
+
+  Object.entries(themeTranslations).forEach(([language, dictionary]) => {
+    if (ui[language]) Object.assign(ui[language], dictionary);
+  });
+
   Object.values(ui).forEach((dictionary) => {
     if (dictionary.aboutTitle) dictionary.aboutTitle = dictionary.aboutTitle.replace(/[,.，。،]/g, "");
   });
@@ -283,6 +302,10 @@
   });
 
   const languageSelect = document.querySelector("#language-select");
+  const themeToggle = document.querySelector("#theme-toggle");
+  const themeLabel = themeToggle?.querySelector("[data-theme-label]");
+  const themeIcon = themeToggle?.querySelector("[data-theme-icon]");
+  const themeColour = document.querySelector("#theme-colour");
   const viewport = document.querySelector("#calculator-viewport");
   const space = document.querySelector("#calculator-space");
   const canvas = document.querySelector("#calculator-canvas");
@@ -295,6 +318,36 @@
   let zoomFactor = 1;
   let currentView = "about";
   let batteryState = { available: false, charging: false, level: null };
+  let currentTheme = document.documentElement.dataset.theme === "bright" ? "bright" : "dark";
+
+  function saveTheme(theme) {
+    try {
+      window.localStorage.setItem("scical600.theme", theme);
+    } catch (_error) {
+      // Theme switching still works for the current session when storage is unavailable.
+    }
+  }
+
+  function renderThemeControl() {
+    if (!themeToggle) return;
+    const language = ui[document.documentElement.lang] ? document.documentElement.lang : "en-GB";
+    const dictionary = ui[language];
+    const isBright = currentTheme === "bright";
+    themeToggle.setAttribute("aria-pressed", String(isBright));
+    themeToggle.setAttribute("aria-label", dictionary.themeToggleAria || ui["en-GB"].themeToggleAria);
+    themeToggle.title = isBright ? dictionary.darkMode : dictionary.brightMode;
+    if (themeLabel) themeLabel.textContent = isBright ? dictionary.darkMode : dictionary.brightMode;
+    if (themeIcon) themeIcon.textContent = isBright ? "☾" : "☀";
+  }
+
+  function applyTheme(theme, persist = true) {
+    currentTheme = theme === "bright" ? "bright" : "dark";
+    document.documentElement.dataset.theme = currentTheme;
+    document.documentElement.style.colorScheme = currentTheme === "bright" ? "light" : "dark";
+    themeColour?.setAttribute("content", currentTheme === "bright" ? "#eef7f6" : "#071019");
+    renderThemeControl();
+    if (persist) saveTheme(currentTheme);
+  }
 
   function readSavedLanguage() {
     try {
@@ -430,6 +483,7 @@
     languageSelect.value = selected;
     renderManual(selected);
     renderBattery();
+    renderThemeControl();
     saveLanguage(selected);
   }
 
@@ -527,6 +581,7 @@
   });
 
   languageSelect.addEventListener("change", () => applyLanguage(languageSelect.value));
+  themeToggle?.addEventListener("click", () => applyTheme(currentTheme === "bright" ? "dark" : "bright"));
   viewport.addEventListener("wheel", (event) => {
     if (!viewport.classList.contains("is-overflowing")) event.preventDefault();
   }, { passive: false });
@@ -537,6 +592,7 @@
   window.addEventListener("popstate", () => showView(viewFromLocation(), false));
   if ("ResizeObserver" in window) new ResizeObserver(() => updateScale()).observe(canvas);
 
+  applyTheme(currentTheme, false);
   applyLanguage(detectedLanguage());
   setupBattery();
   showView(viewFromLocation(), false);
@@ -545,8 +601,10 @@
   window.SciCalUI = Object.freeze({
     showView,
     applyLanguage,
+    applyTheme,
     updateScale,
     translate: (key) => ui[document.documentElement.lang]?.[key] || ui["en-GB"][key] || key,
     get view() { return currentView; },
+    get theme() { return currentTheme; },
   });
 })();

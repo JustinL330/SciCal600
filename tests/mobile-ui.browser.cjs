@@ -238,6 +238,51 @@ async function checkLanguagePersistence(page) {
   }
 }
 
+async function checkThemePersistence(page) {
+  await page.goto("/", { waitUntil: "networkidle" });
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "dark", "dark theme remains the default");
+  assert.equal(await page.locator("#theme-toggle").getAttribute("aria-pressed"), "false", "theme toggle reports the default state");
+  assert.equal((await page.locator("[data-theme-label]").textContent()).trim(), "Bright mode", "default action offers Bright mode");
+
+  await page.locator("#theme-toggle").click();
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "bright", "theme button enables Bright mode");
+  assert.equal(await page.evaluate(() => window.SciCalUI.theme), "bright", "public UI state reports Bright mode");
+  assert.equal(await page.evaluate(() => localStorage.getItem("scical600.theme")), "bright", "Bright mode is saved");
+  assert.equal(await page.locator('#theme-colour').getAttribute("content"), "#eef7f6", "browser chrome uses the bright colour");
+  assert.equal((await page.locator("[data-theme-label]").textContent()).trim(), "Dark mode", "active Bright mode offers the reverse action");
+  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === "rgb(238, 247, 246)");
+
+  const brightMetrics = await page.evaluate(() => {
+    const rgb = getComputedStyle(document.body).backgroundColor.match(/[\d.]+/g).slice(0, 3).map(Number);
+    const toggle = document.querySelector("#theme-toggle").getBoundingClientRect();
+    const cardColour = getComputedStyle(document.querySelector(".home-tool-card h3")).color.match(/[\d.]+/g).slice(0, 3).map(Number);
+    return {
+      bodyBrightness: rgb.reduce((sum, value) => sum + value, 0) / 3,
+      cardTextBrightness: cardColour.reduce((sum, value) => sum + value, 0) / 3,
+      toggleWidth: toggle.width,
+      toggleHeight: toggle.height,
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    };
+  });
+  assert.ok(brightMetrics.bodyBrightness > 220, `Bright mode page background should be light (${brightMetrics.bodyBrightness})`);
+  assert.ok(brightMetrics.cardTextBrightness < 90, `Bright mode card text should stay dark (${brightMetrics.cardTextBrightness})`);
+  assert.ok(brightMetrics.toggleWidth >= 38 && brightMetrics.toggleHeight >= 38, "theme button remains a usable mobile target");
+  assert.ok(brightMetrics.scrollWidth <= brightMetrics.innerWidth, "theme button does not create mobile overflow");
+
+  await page.locator('[data-view-target="linear-algebra"]').first().click();
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "bright", "Bright mode survives in-app navigation");
+  assert.match(await page.locator(".matrix-workspace").evaluate((element) => getComputedStyle(element).backgroundImage), /rgba?\(255, 255, 255/, "matrix workspace receives its bright surface");
+  await page.reload({ waitUntil: "networkidle" });
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "bright", "Bright mode survives reload");
+
+  await page.locator("#language-select").selectOption("fr");
+  assert.equal((await page.locator("[data-theme-label]").textContent()).trim(), "Mode sombre", "theme action follows the selected language");
+  await page.locator("#theme-toggle").click();
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "dark", "theme button returns to Dark mode");
+  assert.equal(await page.evaluate(() => localStorage.getItem("scical600.theme")), "dark", "Dark mode is saved");
+}
+
 async function runFunctionalChecks(page) {
   const firstKey = page.locator(".calc-key").first();
   await firstKey.dispatchEvent("pointerdown", { pointerId: 41, pointerType: "touch", isPrimary: true, buttons: 1 });
@@ -564,6 +609,19 @@ async function runFunctionalChecks(page) {
       const page = await context.newPage();
       await checkLanguagePersistence(page);
       console.log("PASS twelve-language Android/native content and manual locale persistence");
+      await context.close();
+    }
+    {
+      const context = await browser.newContext({
+        baseURL: `http://127.0.0.1:${address.port}`,
+        viewport: { width: 393, height: 873 },
+        hasTouch: true,
+        isMobile: true,
+        reducedMotion: "reduce",
+      });
+      const page = await context.newPage();
+      await checkThemePersistence(page);
+      console.log("PASS saved Bright/Dark theme, mobile layout, and translated theme action");
       await context.close();
     }
     {
