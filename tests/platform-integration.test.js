@@ -249,6 +249,7 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   const iosWorkflow = read(".github/workflows/ios.yml");
   const manifest = JSON.parse(read("package.json"));
   assert.equal(manifest.dependencies["@capacitor/android"], "8.5.2");
+  assert.equal(manifest.dependencies["@capacitor/clipboard"], "8.0.1");
   assert.equal(manifest.dependencies["@capacitor/haptics"], "8.0.2");
   assert.equal(manifest.dependencies["@capacitor/share"], "8.0.3");
   assert.equal(manifest.devDependencies["@capacitor/ios"], "8.5.2");
@@ -319,6 +320,24 @@ test("shares the current result through Android while remaining hidden on the we
   assert.equal((siteUi.match(/shareResult:/g) || []).length, 10, "ten core dictionaries localize sharing");
   assert.equal((additionalLocales.match(/shareResult:/g) || []).length, 2, "Thai and Cantonese localize sharing");
   assert.match(read("tests/android-smoke.cjs"), /dataset\.androidShare/);
+});
+
+test("copies the current result through Android with localized confirmation", () => {
+  const html = read("index.html");
+  const nativeEntry = read("native/android-entry.js");
+  const copyResult = read("native/copy-result.js");
+  const siteUi = read("site-ui.js");
+  const additionalLocales = read("additional-locales.js");
+  assert.match(html, /id="android-copy-result"[^>]*hidden[^>]*data-i18n-aria="copyResult"/);
+  assert.match(nativeEntry, /@capacitor\/clipboard/);
+  assert.match(nativeEntry, /installResultCopy/);
+  assert.match(copyResult, /await write\(\{ string \}\)/);
+  assert.match(copyResult, /setLabel\('copiedResult'/);
+  assert.equal((siteUi.match(/copyResult:/g) || []).length, 10, "ten core dictionaries localize copying");
+  assert.equal((siteUi.match(/copiedResult:/g) || []).length, 10, "ten core dictionaries localize copy confirmation");
+  assert.equal((additionalLocales.match(/copyResult:/g) || []).length, 2, "Thai and Cantonese localize copying");
+  assert.equal((additionalLocales.match(/copiedResult:/g) || []).length, 2, "Thai and Cantonese localize copy confirmation");
+  assert.match(read("tests/android-smoke.cjs"), /dataset\.androidCopy/);
 });
 
 test("keeps Android system-bar content legible over the edge-to-edge dark shell", () => {

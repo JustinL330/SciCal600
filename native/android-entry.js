@@ -1,9 +1,11 @@
 import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { Clipboard } from '@capacitor/clipboard';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Share } from '@capacitor/share';
 import { handleBack } from './back.js';
 import { viewFromAndroidShortcutUrl } from './android-shortcuts.js';
+import { installResultCopy } from './copy-result.js';
 import { installButtonHaptics } from './haptics.js';
 import { installResultShare } from './share-result.js';
 import { configureAndroidSystemBars } from './system-bars.js';
@@ -20,6 +22,11 @@ if (Capacitor.isNativePlatform()) {
     }),
   });
   document.documentElement.dataset.androidHaptics = 'ready';
+  installResultCopy({
+    document,
+    write: (options) => Clipboard.write(options),
+    translate: (key) => window.SciCalUI?.translate(key) || key,
+  });
   installResultShare({
     document,
     canShare: () => Share.canShare(),

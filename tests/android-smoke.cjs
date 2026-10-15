@@ -26,6 +26,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
     await page.waitForFunction(() => document.documentElement.dataset.androidSystemBars === 'ready');
     assert.ok(['ready', 'active'].includes(await page.locator('html').getAttribute('data-android-haptics')), 'native button haptics registered');
+    await page.waitForFunction(() => document.documentElement.dataset.androidCopy === 'ready');
     await page.waitForFunction(() => document.documentElement.dataset.androidShare === 'ready');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
     assert.deepEqual(external, [], 'all application scripts/styles are bundled locally');
@@ -37,9 +38,13 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     await page.waitForFunction(() => window.SciCalUI.view === 'linear-algebra');
     assert.equal(await page.locator('html').getAttribute('data-android-shortcut'), 'linear-algebra', 'launcher shortcut opens its offline workspace');
     await page.evaluate(() => window.SciCalUI.showView('calculator'));
+    assert.ok(await page.locator('#android-copy-result').isVisible(), 'native result copying is available');
     assert.ok(await page.locator('#android-share-result').isVisible(), 'native result sharing is available');
     for (const key of ['AC', '1', '+', '1', 'EXE']) await page.locator('.calc-key[data-key-label="' + key + '"]').click();
     assert.equal((await page.locator('#result').textContent()).trim(), '2', 'offline 1+1');
+    const copyEvents = Number(await page.locator('html').getAttribute('data-android-copy-events') || '0');
+    await page.locator('#android-copy-result').click();
+    await page.waitForFunction((previous) => Number(document.documentElement.dataset.androidCopyEvents || '0') > previous, copyEvents);
     await page.waitForFunction(() => document.documentElement.dataset.androidHaptics === 'active');
     const pressBackOnce = async (description, condition) => {
       const before = Number(await page.locator('html').getAttribute('data-android-back-events') || '0');
@@ -62,7 +67,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, launcher shortcut, native system bars, haptics and sharing, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK, offline four workspaces, launcher shortcut, native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }
