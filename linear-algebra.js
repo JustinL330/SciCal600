@@ -24,7 +24,7 @@
   const result = document.querySelector("#matrix-result");
   const resultSummary = document.querySelector("#matrix-result-summary");
   const languageSelect = document.querySelector("#language-select");
-  const binaryOperations = new Set(["add", "subtract", "multiply"]);
+  const binaryOperations = new Set(["add", "subtract", "multiply", "solve"]);
   const notation = Object.freeze({
     add: "A + B",
     subtract: "A − B",
@@ -34,11 +34,17 @@
     adjugate: "adj(A)",
     eigen: "eig(A)",
     determinant: "det(A)",
+    rref: "rref(A)",
+    rank: "rank(A)",
+    trace: "tr(A)",
+    norm: "‖A‖F",
+    solve: "AX = B",
   });
   const examples = Object.freeze({
     product: { operation: "multiply", a: "1 2 3\n4 5 6", b: "7 8\n9 10\n11 12" },
     determinant: { operation: "determinant", a: "2 -1 0\n-1 2 -1\n0 -1 2" },
     eigen: { operation: "eigen", a: "2 1\n1 2" },
+    solve: { operation: "solve", a: "2 1\n5 3", b: "1\n2" },
   });
   let lastResultContext = null;
 
@@ -170,6 +176,11 @@
       else if (selected === "transpose") output = core.transpose(a);
       else if (selected === "adjugate") output = core.adjugate(a);
       else if (selected === "determinant") output = core.determinant(a);
+      else if (selected === "rref") output = core.rowReduce(a).matrix;
+      else if (selected === "rank") output = core.rank(a);
+      else if (selected === "trace") output = core.trace(a);
+      else if (selected === "norm") output = core.frobeniusNorm(a);
+      else if (selected === "solve") output = core.solve(a, b);
       else if (selected === "eigen") {
         renderEigen(core.eigen(a), a);
         calculateButton.classList.add("has-success");

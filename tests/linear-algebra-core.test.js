@@ -39,6 +39,23 @@ test("calculates determinant, inverse, transpose and adjugate", () => {
   assert.throws(() => matrix.inverse([[1, 2], [2, 4]]), matrix.MatrixError);
 });
 
+test("row reduces rectangular matrices and reports rank", () => {
+  const output = matrix.rowReduce([[1, 2, 3], [2, 4, 6], [1, 1, 1]]);
+  assert.deepEqual(output.matrix, [[1, 0, -1], [0, 1, 2], [0, 0, 0]]);
+  assert.deepEqual(output.pivotColumns, [0, 1]);
+  assert.equal(output.rank, 2);
+  assert.equal(matrix.rank([[1, 2], [2, 4]]), 1);
+});
+
+test("calculates trace, Frobenius norm and linear-system solutions", () => {
+  assert.equal(matrix.trace([[3, 2], [7, -1]]), 2);
+  assert.equal(matrix.frobeniusNorm([[1, 2], [2, 4]]), 5);
+  assert.deepEqual(matrix.solve([[2, 1], [5, 3]], [[1], [2]]), [[1], [-1]]);
+  assert.deepEqual(matrix.solve([[2, 0], [0, 4]], [[4, 2], [8, 12]]), [[2, 1], [2, 3]]);
+  assert.throws(() => matrix.trace([[1, 2, 3], [4, 5, 6]]), matrix.MatrixError);
+  assert.throws(() => matrix.solve([[1, 2], [2, 4]], [[1], [2]]), matrix.MatrixError);
+});
+
 test("preserves valid small-scale matrix values", () => {
   const small = [[1e-11, 0], [0, 1]];
   closeTo(matrix.determinant(small), 1e-11, 1e-22);

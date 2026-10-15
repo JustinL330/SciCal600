@@ -30,7 +30,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     await page.waitForFunction(() => document.documentElement.dataset.androidShare === 'ready');
     const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(e => e.src || e.href).filter(url => new URL(url).origin !== location.origin));
     assert.deepEqual(external, [], 'all application scripts/styles are bundled locally');
-    for (const view of ['calculator', 'linear-algebra', 'computer-calculator', 'economics-calculator']) {
+    for (const view of ['calculator', 'linear-algebra', 'statistics-calculator', 'probability-calculator', 'computer-calculator', 'economics-calculator']) {
       await page.evaluate(view => window.SciCalUI.showView(view), view);
       assert.ok(await page.locator('[data-view-panel="' + view + '"]').isVisible(), view + ' works offline');
     }

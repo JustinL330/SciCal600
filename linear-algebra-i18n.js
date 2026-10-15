@@ -10,6 +10,7 @@
     matrixExampleProduct: "Rectangular product",
     matrixExampleDeterminant: "3 × 3 determinant",
     matrixExampleEigen: "Eigenpairs",
+    matrixExampleSolve: "Solve a system",
     matrixOperationsAria: "Matrix operation shortcuts",
     matrixAddition: "Add",
     matrixSubtraction: "Subtract",
@@ -19,6 +20,16 @@
     matrixAdjugateShort: "Adjugate",
     matrixEigenShort: "Eigenpairs",
     matrixDeterminantShort: "Determinant",
+    matrixRrefShort: "RREF",
+    matrixRankShort: "Rank",
+    matrixTraceShort: "Trace",
+    matrixNormShort: "Frobenius norm",
+    matrixSolveShort: "Solve",
+    matrixRref: "Reduced row echelon form of A",
+    matrixRank: "Rank of A",
+    matrixTrace: "Trace of A",
+    matrixNorm: "Frobenius norm of A",
+    matrixSolve: "Solve AX = B",
     matrixInputHint: "One row per line · spaces or commas between values",
     matrixA: "Matrix A",
     matrixB: "Matrix B",
@@ -38,10 +49,10 @@
   const dictionaries = {
     "en-GB": en,
     "zh-Hant": merge({
-      linearTitle: "矩陣計算，省去繁瑣設定。", linearIntro: "選擇運算，貼上或輸入矩陣，即可查看結構清晰的結果；支援最大 6 × 6 實數矩陣。", matrixWorkspaceEyebrow: "矩陣工作空間", matrixWorkspaceTitle: "先選運算，再輸入資料。", matrixExamples: "範例", matrixExampleProduct: "矩形矩陣乘法", matrixExampleDeterminant: "3 × 3 行列式", matrixExampleEigen: "特徵對", matrixOperationsAria: "矩陣運算捷徑", matrixAddition: "相加", matrixSubtraction: "相減", matrixMultiplication: "相乘", matrixInverseShort: "逆矩陣", matrixTransposeShort: "轉置", matrixAdjugateShort: "伴隨", matrixEigenShort: "特徵對", matrixDeterminantShort: "行列式", matrixInputHint: "每行一列 · 數值以空格或逗號分隔", matrixTemplatesAria: "矩陣範本", matrixIdentity: "單位矩陣", matrixClear: "清除", matrixSwap: "交換 A 與 B", matrixResultSummary: "此處會顯示輸入與結果維度。", matrixResultScalar: "純量", matrixResultPairs: "組特徵對", matrixResultError: "檢查輸入", matrixNote: "計算只在瀏覽器內進行。特徵對支援所有實數 2 × 2 矩陣，以及最大 6 × 6 的實對稱矩陣。",
+      linearTitle: "矩陣計算，省去繁瑣設定。", linearIntro: "選擇運算，貼上或輸入矩陣，即可查看結構清晰的結果；支援最大 6 × 6 實數矩陣。", matrixWorkspaceEyebrow: "矩陣工作空間", matrixWorkspaceTitle: "先選運算，再輸入資料。", matrixExamples: "範例", matrixExampleProduct: "矩形矩陣乘法", matrixExampleDeterminant: "3 × 3 行列式", matrixExampleEigen: "特徵對", matrixExampleSolve: "解聯立方程", matrixOperationsAria: "矩陣運算捷徑", matrixAddition: "相加", matrixSubtraction: "相減", matrixMultiplication: "相乘", matrixInverseShort: "逆矩陣", matrixTransposeShort: "轉置", matrixAdjugateShort: "伴隨", matrixEigenShort: "特徵對", matrixDeterminantShort: "行列式", matrixRrefShort: "最簡列梯形", matrixRankShort: "秩", matrixTraceShort: "跡", matrixNormShort: "Frobenius 範數", matrixSolveShort: "解方程", matrixRref: "A 的最簡列梯形", matrixRank: "A 的秩", matrixTrace: "A 的跡", matrixNorm: "A 的 Frobenius 範數", matrixSolve: "求解 AX = B", matrixInputHint: "每行一列 · 數值以空格或逗號分隔", matrixTemplatesAria: "矩陣範本", matrixIdentity: "單位矩陣", matrixClear: "清除", matrixSwap: "交換 A 與 B", matrixResultSummary: "此處會顯示輸入與結果維度。", matrixResultScalar: "純量", matrixResultPairs: "組特徵對", matrixResultError: "檢查輸入", matrixNote: "計算只在瀏覽器內進行。特徵對支援所有實數 2 × 2 矩陣，以及最大 6 × 6 的實對稱矩陣。",
     }),
     "zh-Hans": merge({
-      linearTitle: "矩阵计算，省去繁琐设置。", linearIntro: "选择运算，粘贴或输入矩阵，即可查看结构清晰的结果；支持最大 6 × 6 实数矩阵。", matrixWorkspaceEyebrow: "矩阵工作区", matrixWorkspaceTitle: "先选运算，再输入数据。", matrixExamples: "示例", matrixExampleProduct: "矩形矩阵乘法", matrixExampleDeterminant: "3 × 3 行列式", matrixExampleEigen: "特征对", matrixOperationsAria: "矩阵运算快捷方式", matrixAddition: "相加", matrixSubtraction: "相减", matrixMultiplication: "相乘", matrixInverseShort: "逆矩阵", matrixTransposeShort: "转置", matrixAdjugateShort: "伴随", matrixEigenShort: "特征对", matrixDeterminantShort: "行列式", matrixInputHint: "每行一行 · 数值以空格或逗号分隔", matrixTemplatesAria: "矩阵模板", matrixIdentity: "单位矩阵", matrixClear: "清除", matrixSwap: "交换 A 与 B", matrixResultSummary: "此处会显示输入与结果维度。", matrixResultScalar: "标量", matrixResultPairs: "组特征对", matrixResultError: "检查输入", matrixNote: "计算只在浏览器内进行。特征对支持所有实数 2 × 2 矩阵，以及最大 6 × 6 的实对称矩阵。",
+      linearTitle: "矩阵计算，省去繁琐设置。", linearIntro: "选择运算，粘贴或输入矩阵，即可查看结构清晰的结果；支持最大 6 × 6 实数矩阵。", matrixWorkspaceEyebrow: "矩阵工作区", matrixWorkspaceTitle: "先选运算，再输入数据。", matrixExamples: "示例", matrixExampleProduct: "矩形矩阵乘法", matrixExampleDeterminant: "3 × 3 行列式", matrixExampleEigen: "特征对", matrixExampleSolve: "解线性方程组", matrixOperationsAria: "矩阵运算快捷方式", matrixAddition: "相加", matrixSubtraction: "相减", matrixMultiplication: "相乘", matrixInverseShort: "逆矩阵", matrixTransposeShort: "转置", matrixAdjugateShort: "伴随", matrixEigenShort: "特征对", matrixDeterminantShort: "行列式", matrixRrefShort: "最简行阶梯形", matrixRankShort: "秩", matrixTraceShort: "迹", matrixNormShort: "Frobenius 范数", matrixSolveShort: "解方程", matrixRref: "A 的最简行阶梯形", matrixRank: "A 的秩", matrixTrace: "A 的迹", matrixNorm: "A 的 Frobenius 范数", matrixSolve: "求解 AX = B", matrixInputHint: "每行一行 · 数值以空格或逗号分隔", matrixTemplatesAria: "矩阵模板", matrixIdentity: "单位矩阵", matrixClear: "清除", matrixSwap: "交换 A 与 B", matrixResultSummary: "此处会显示输入与结果维度。", matrixResultScalar: "标量", matrixResultPairs: "组特征对", matrixResultError: "检查输入", matrixNote: "计算只在浏览器内进行。特征对支持所有实数 2 × 2 矩阵，以及最大 6 × 6 的实对称矩阵。",
     }),
     ja: merge({
       linearTitle: "設定に迷わない行列計算。", linearIntro: "演算を選び、行列を貼り付けるか入力すると、整理された結果を確認できます。実数行列は最大6×6。", matrixWorkspaceEyebrow: "行列ワークスペース", matrixWorkspaceTitle: "演算を選び、データを入力。", matrixExamples: "例", matrixExampleProduct: "長方形行列の積", matrixExampleDeterminant: "3×3 行列式", matrixExampleEigen: "固有対", matrixOperationsAria: "行列演算ショートカット", matrixAddition: "加算", matrixSubtraction: "減算", matrixMultiplication: "乗算", matrixInverseShort: "逆行列", matrixTransposeShort: "転置", matrixAdjugateShort: "随伴", matrixEigenShort: "固有対", matrixDeterminantShort: "行列式", matrixInputHint: "1行に1行分 · 値は空白またはコンマで区切る", matrixTemplatesAria: "行列テンプレート", matrixIdentity: "単位行列", matrixClear: "消去", matrixSwap: "AとBを交換", matrixResultSummary: "入力と結果の次元をここに表示します。", matrixResultScalar: "スカラー", matrixResultPairs: "個の固有対", matrixResultError: "入力を確認", matrixNote: "計算はブラウザー内だけで行われます。固有対は実数2×2行列と最大6×6の実対称行列に対応します。",

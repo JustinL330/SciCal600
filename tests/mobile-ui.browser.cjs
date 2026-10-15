@@ -155,12 +155,16 @@ async function checkCompactHome(page, viewport) {
       removedCopyCount: document.querySelectorAll(".reference-model-banner, .feature-pills, .exam-note, .tool-card--future").length,
     };
   });
-  assert.equal(metrics.cardCount, 4, `${viewport.name}: all four calculator choices should be present`);
-  assert.equal(metrics.buttonCount, 4, `${viewport.name}: all four calculator choices should have direct actions`);
-  assert.ok(metrics.cardBottoms.every((bottom) => bottom <= metrics.innerHeight), `${viewport.name}: all four calculator choices should be visible without scrolling`);
+  assert.equal(metrics.cardCount, 6, `${viewport.name}: all six calculator choices should be present`);
+  assert.equal(metrics.buttonCount, 6, `${viewport.name}: all six calculator choices should have direct actions`);
+  assert.ok(metrics.cardBottoms.slice(0, 2).every((bottom) => bottom <= metrics.innerHeight), `${viewport.name}: the first calculator choices should be visible without scrolling`);
   assert.ok(metrics.buttonHeights.every((height) => height >= 44), `${viewport.name}: home actions should have mobile touch targets (${metrics.buttonHeights.join(", ")}px)`);
   assert.ok(metrics.documentWidth <= metrics.innerWidth, `${viewport.name}: home page horizontal overflow`);
   assert.equal(metrics.removedCopyCount, 0, `${viewport.name}: redundant home-page copy should be removed`);
+  const lastPrimaryCard = page.locator(".home-tools--primary .home-tool-card").last();
+  await lastPrimaryCard.scrollIntoViewIfNeeded();
+  const lastPrimaryCardBox = await lastPrimaryCard.boundingBox();
+  assert.ok(lastPrimaryCardBox && lastPrimaryCardBox.y >= 0 && lastPrimaryCardBox.y + lastPrimaryCardBox.height <= metrics.innerHeight, `${viewport.name}: all six calculator choices should remain reachable by scrolling`);
   await page.locator("#love-egg-button").click();
   assert.equal(await page.locator("#love-egg-dialog").isVisible(), true, `${viewport.name}: love-heart Easter egg opens from the title`);
   await page.waitForFunction(() => document.querySelector("#love-source-code")?.textContent.includes("int main(void)"));
@@ -353,7 +357,7 @@ async function runFunctionalChecks(page) {
   await page.goto("/", { waitUntil: "networkidle" });
   assert.equal(await page.locator('[data-view-panel="about"]').isVisible(), true, "root platform page");
   assert.match(await page.locator('[data-view-panel="about"] h1').textContent(), /math/i);
-  assert.equal(await page.locator(".home-tools:not(.native-availability) .home-tool-card").count(), 6, "home should show four primary and two companion calculators");
+  assert.equal(await page.locator(".home-tools:not(.native-availability) .home-tool-card").count(), 8, "home should show six primary and two companion calculators");
   assert.equal(await page.locator("#language-select option").count(), 12, "language picker should expose twelve languages");
   const localizedTitles = new Set();
   const localizedAndroidLabels = new Set();
@@ -385,7 +389,7 @@ async function runFunctionalChecks(page) {
   await page.locator('[data-view-target="linear-algebra"]').first().click();
   assert.equal(new URL(page.url()).pathname, "/linear-algebra", "linear algebra navigation path");
   assert.equal(await page.locator("#matrix-a").getAttribute("inputmode"), "text", "matrix A uses a text keyboard with spaces and Return");
-  assert.equal(await page.locator("[data-matrix-operation]").count(), 8, "all eight requested matrix operations are prominent");
+  assert.equal(await page.locator("[data-matrix-operation]").count(), 13, "all thirteen matrix operations are prominent");
   const linearLayout = await page.evaluate(() => {
     const buttons = [...document.querySelectorAll("#matrix-workspace button")]
       .filter((button) => button.offsetParent && !button.hidden)
@@ -427,6 +431,13 @@ async function runFunctionalChecks(page) {
   assert.equal(await page.locator("#matrix-a-shape").textContent(), "2 × 3", "rectangular example reports matrix A dimensions");
   assert.equal(await page.locator("#matrix-b-shape").textContent(), "3 × 2", "rectangular example reports matrix B dimensions");
   assert.deepEqual(await page.locator("#matrix-result td").allTextContents(), ["58", "64", "139", "154"], "rectangular example calculates immediately");
+  await page.locator('[data-matrix-example="solve"]').click();
+  assert.equal(await page.locator("#matrix-operation").inputValue(), "solve", "linear-system example selects solve");
+  assert.deepEqual(await page.locator("#matrix-result td").allTextContents(), ["1", "-1"], "AX = B solver returns the solution vector");
+  await page.locator('[data-matrix-operation="rref"]').click();
+  await page.locator("#matrix-a").fill("1 2 3\n2 4 6\n1 1 1");
+  await page.locator("#matrix-calculate").click();
+  assert.deepEqual(await page.locator("#matrix-result td").allTextContents(), ["1", "0", "-1", "0", "1", "2", "0", "0", "0"], "RREF operation renders reduced rows");
   await page.locator('[data-matrix-example="eigen"]').click();
   assert.equal(await page.locator("#matrix-result-shape").textContent(), "2 eigenpairs", "eigen result context starts in English");
   await page.locator("#language-select").selectOption("zh-Hans");
@@ -451,6 +462,26 @@ async function runFunctionalChecks(page) {
   await page.locator("#language-select").selectOption("en-GB");
   await page.reload({ waitUntil: "networkidle" });
   assert.equal(await page.locator('[data-view-panel="linear-algebra"]').isVisible(), true, "direct /linear-algebra refresh route");
+  await page.goto("/statistics-calculator", { waitUntil: "networkidle" });
+  assert.equal(new URL(page.url()).pathname, "/statistics-calculator", "Statistics Calculator formal route");
+  assert.equal(await page.locator('[data-view-panel="statistics-calculator"]').isVisible(), true, "Statistics Calculator direct route");
+  await page.locator("#statistics-example").click();
+  assert.match(await page.locator("#statistics-summary").textContent(), /Mean4\.5/, "descriptive statistics calculate from example data");
+  assert.equal(await page.locator("#statistics-frequency-body tr").count(), 8, "frequency table renders each distinct value");
+  assert.match(await page.locator("#statistics-bivariate").textContent(), /Pearson correlation r/, "paired analysis renders correlation and regression");
+  const statisticsLayout = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, minButtonHeight: Math.min(...[...document.querySelectorAll("#statistics-calculator button")].filter((button) => button.offsetParent).map((button) => button.getBoundingClientRect().height)) }));
+  assert.ok(statisticsLayout.scrollWidth <= statisticsLayout.innerWidth, "Statistics Calculator has no mobile horizontal overflow");
+  assert.ok(statisticsLayout.minButtonHeight >= 44, `Statistics Calculator minimum touch target is ${statisticsLayout.minButtonHeight}`);
+  await page.goto("/probability-calculator", { waitUntil: "networkidle" });
+  assert.equal(new URL(page.url()).pathname, "/probability-calculator", "Probability Calculator formal route");
+  assert.equal(await page.locator('[data-view-panel="probability-calculator"]').isVisible(), true, "Probability Calculator direct route");
+  assert.match(await page.locator("#binomial-result").textContent(), /0\.1171875/, "binomial distribution calculates exact probability");
+  assert.match(await page.locator("#poisson-result").textContent(), /0\.146525/, "Poisson distribution calculates exact probability");
+  assert.match(await page.locator("#normal-result").textContent(), /0\.95000/, "normal distribution calculates interval probability");
+  assert.match(await page.locator("#event-probability-result").textContent(), /0\.7/, "event calculator renders the union probability");
+  const probabilityLayout = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, minButtonHeight: Math.min(...[...document.querySelectorAll("#probability-calculator button")].filter((button) => button.offsetParent).map((button) => button.getBoundingClientRect().height)) }));
+  assert.ok(probabilityLayout.scrollWidth <= probabilityLayout.innerWidth, "Probability Calculator has no mobile horizontal overflow");
+  assert.ok(probabilityLayout.minButtonHeight >= 44, `Probability Calculator minimum touch target is ${probabilityLayout.minButtonHeight}`);
   await page.goto("/computer-calculator", { waitUntil: "networkidle" });
   assert.equal(new URL(page.url()).pathname, "/computer-calculator", "Computer Calculator formal route");
   assert.equal(await page.locator('[data-view-panel="computer-calculator"]').isVisible(), true, "Computer Calculator direct refresh");
@@ -555,7 +586,7 @@ async function runFunctionalChecks(page) {
         assert.ok(metrics.minKeyHeight >= 44, "browser toolbar height changes should preserve comfortable calculator keys");
         assert.ok(metrics.calculatorWidth >= iPhone17Metrics.calculatorWidth * 0.9, "browser toolbar height changes should preserve a full-width calculator body");
         const homeMetrics = await checkCompactHome(page, viewport);
-        console.log(`PASS ${viewport.name} home: ${homeMetrics.cardCount} primary calculator choices above the fold`);
+        console.log(`PASS ${viewport.name} home: ${homeMetrics.cardCount} primary calculator choices remain mobile-accessible`);
       }
       console.log(`PASS ${viewport.name}: keys ${metrics.minKeyWidth.toFixed(1)} × ${metrics.minKeyHeight.toFixed(1)} CSS px`);
       if (viewport.name === "iPhone 16/17 Pro") await runFunctionalChecks(page);

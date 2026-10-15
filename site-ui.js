@@ -134,6 +134,10 @@
     if (ui[language]) Object.assign(ui[language], dictionary);
   });
 
+  Object.entries(window.SciCalAnalysisTranslations || {}).forEach(([language, dictionary]) => {
+    if (ui[language]) Object.assign(ui[language], dictionary);
+  });
+
   Object.entries(window.SciCalComputerTranslations || {}).forEach(([language, dictionary]) => {
     if (ui[language]) Object.assign(ui[language], dictionary);
   });
@@ -287,7 +291,7 @@
   const batteryFill = document.querySelector("#battery-fill");
   const batteryText = document.querySelector("#battery-text");
   const views = [...document.querySelectorAll("[data-view-panel]")];
-  const allowedViews = new Set(["calculator", "about", "manual", "linear-algebra", "computer-calculator", "economics-calculator"]);
+  const allowedViews = new Set(["calculator", "about", "manual", "linear-algebra", "statistics-calculator", "probability-calculator", "computer-calculator", "economics-calculator"]);
   let zoomFactor = 1;
   let currentView = "about";
   let batteryState = { available: false, charging: false, level: null };
@@ -503,6 +507,8 @@
     if (path === "/scientific-calculator" || path === "/calculator") return "calculator";
     if (path === "/manual") return "manual";
     if (path === "/linear-algebra") return "linear-algebra";
+    if (path === "/statistics-calculator" || path === "/statistics") return "statistics-calculator";
+    if (path === "/probability-calculator" || path === "/probability") return "probability-calculator";
     if (path === "/computer-calculator") return "computer-calculator";
     if (path === "/economics-calculator") return "economics-calculator";
     return "about";

@@ -172,6 +172,83 @@
     return transpose(cofactors).map((row) => row.map(cleanNumber));
   }
 
+  function rowReduce(matrix) {
+    const [rows, columns] = dimensions(matrix);
+    const working = matrix.map((row) => row.slice());
+    const tolerance = pivotTolerance(matrix);
+    const pivotColumns = [];
+    let pivotRow = 0;
+
+    for (let column = 0; column < columns && pivotRow < rows; column += 1) {
+      let pivot = pivotRow;
+      for (let row = pivotRow + 1; row < rows; row += 1) {
+        if (Math.abs(working[row][column]) > Math.abs(working[pivot][column])) pivot = row;
+      }
+      if (Math.abs(working[pivot][column]) <= tolerance) continue;
+      [working[pivot], working[pivotRow]] = [working[pivotRow], working[pivot]];
+      const divisor = working[pivotRow][column];
+      working[pivotRow] = working[pivotRow].map((value) => value / divisor);
+      for (let row = 0; row < rows; row += 1) {
+        if (row === pivotRow) continue;
+        const factor = working[row][column];
+        if (Math.abs(factor) <= tolerance) continue;
+        working[row] = working[row].map((value, index) => value - factor * working[pivotRow][index]);
+      }
+      pivotColumns.push(column);
+      pivotRow += 1;
+    }
+
+    return {
+      matrix: working.map((row) => row.map((value) => Math.abs(value) <= tolerance ? 0 : cleanNumber(value))),
+      pivotColumns,
+      rank: pivotColumns.length,
+    };
+  }
+
+  function rank(matrix) {
+    return rowReduce(matrix).rank;
+  }
+
+  function trace(matrix) {
+    const size = requireSquare(matrix);
+    return cleanNumber(Array.from({ length: size }, (_, index) => matrix[index][index]).reduce((sum, value) => sum + value, 0));
+  }
+
+  function frobeniusNorm(matrix) {
+    assertMatrix(matrix);
+    return cleanNumber(Math.sqrt(matrix.reduce((total, row) => (
+      total + row.reduce((rowTotal, value) => rowTotal + value ** 2, 0)
+    ), 0)));
+  }
+
+  function solve(a, b) {
+    const size = requireSquare(a);
+    const [bRows, bColumns] = dimensions(b);
+    if (bRows !== size) throw new MatrixError("Matrix B must have the same number of rows as Matrix A.");
+    const tolerance = pivotTolerance(a);
+    const augmented = a.map((row, index) => [...row, ...b[index]]);
+
+    for (let column = 0; column < size; column += 1) {
+      let pivot = column;
+      for (let row = column + 1; row < size; row += 1) {
+        if (Math.abs(augmented[row][column]) > Math.abs(augmented[pivot][column])) pivot = row;
+      }
+      if (Math.abs(augmented[pivot][column]) <= tolerance) {
+        throw new MatrixError("Matrix A does not have a unique solution.");
+      }
+      [augmented[pivot], augmented[column]] = [augmented[column], augmented[pivot]];
+      const divisor = augmented[column][column];
+      augmented[column] = augmented[column].map((value) => value / divisor);
+      for (let row = 0; row < size; row += 1) {
+        if (row === column) continue;
+        const factor = augmented[row][column];
+        augmented[row] = augmented[row].map((value, index) => value - factor * augmented[column][index]);
+      }
+    }
+
+    return augmented.map((row) => row.slice(size, size + bColumns).map(cleanNumber));
+  }
+
   function cleanNumber(value) {
     if (value === 0 || Object.is(value, -0)) return 0;
     const rounded = Math.round(value);
@@ -306,6 +383,11 @@
     determinant,
     inverse,
     adjugate,
+    rowReduce,
+    rank,
+    trace,
+    frobeniusNorm,
+    solve,
     eigen,
     cleanNumber,
   });

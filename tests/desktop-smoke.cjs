@@ -44,7 +44,7 @@ function findPackagedExecutable(root) {
     await page.waitForFunction(() => window.SciCalUI && document.documentElement.dataset.native === 'desktop');
     assert.equal(new URL(page.url()).pathname, '/computer-calculator', 'app protocol reloads a direct workspace route');
     assert.ok(await page.locator('[data-view-panel="computer-calculator"]').isVisible(), 'direct workspace survives reload');
-    for (const view of ['calculator', 'linear-algebra', 'computer-calculator', 'economics-calculator']) {
+    for (const view of ['calculator', 'linear-algebra', 'statistics-calculator', 'probability-calculator', 'computer-calculator', 'economics-calculator']) {
       await page.evaluate((nextView) => window.SciCalUI.showView(nextView), view);
       assert.ok(await page.locator(`[data-view-panel="${view}"]`).isVisible(), `${view} opens`);
     }
@@ -53,7 +53,7 @@ function findPackagedExecutable(root) {
       await page.locator(`.calc-key[data-key-label="${key}"]`).click();
     }
     assert.equal((await page.locator('#result').textContent()).trim(), '2', 'desktop 1+1');
-    console.log(`DESKTOP_SMOKE_OK: ${page.url()}, isolated renderer, four workspaces, 1+1`);
+    console.log(`DESKTOP_SMOKE_OK: ${page.url()}, isolated renderer, six workspaces, 1+1`);
   } finally {
     await desktopApp.close();
   }

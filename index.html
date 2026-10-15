@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="computer-calculator.css" />
     <link rel="stylesheet" href="economics-calculator.css" />
+    <link rel="stylesheet" href="statistics-probability.css" />
     <link rel="stylesheet" href="android-download.css" />
   </head>
   <body class="is-about-view">
@@ -144,8 +145,10 @@
               <div class="home-tool-grid">
                 <article class="home-tool-card"><span class="home-tool-card__number">01</span><div><h3 data-i18n="scientificToolTitle">Scientific calculator SciCal600 Scientific</h3><button class="primary-action" type="button" data-view-target="calculator" data-i18n="openScientific">Open scientific calculator</button></div></article>
                 <article class="home-tool-card"><span class="home-tool-card__number">02</span><div><h3 data-i18n="linearToolTitle">Linear Algebra</h3><button class="primary-action" type="button" data-view-target="linear-algebra" data-i18n="openLinear">Open Linear Algebra</button></div></article>
-                <article class="home-tool-card"><span class="home-tool-card__number">03</span><div><h3 data-i18n="computerToolTitle">Computer Calculator</h3><button class="primary-action" type="button" data-view-target="computer-calculator" data-i18n="openComputer">Open Computer Calculator</button></div></article>
-                <article class="home-tool-card"><span class="home-tool-card__number">04</span><div><h3 data-i18n="economicsToolTitle">Economics Calculator</h3><button class="primary-action" type="button" data-view-target="economics-calculator" data-i18n="openEconomics">Open Economics Calculator</button></div></article>
+                <article class="home-tool-card"><span class="home-tool-card__number">03</span><div><h3 data-i18n="statisticsToolTitle">Statistics Calculator</h3><p data-i18n="statisticsToolDescription">Descriptive statistics, frequency tables, covariance, correlation, and linear regression.</p><button class="primary-action" type="button" data-view-target="statistics-calculator" data-i18n="openStatistics">Open Statistics Calculator</button></div></article>
+                <article class="home-tool-card"><span class="home-tool-card__number">04</span><div><h3 data-i18n="probabilityToolTitle">Probability Calculator</h3><p data-i18n="probabilityToolDescription">Events, combinatorics, binomial, Poisson, and normal distributions.</p><button class="primary-action" type="button" data-view-target="probability-calculator" data-i18n="openProbability">Open Probability Calculator</button></div></article>
+                <article class="home-tool-card"><span class="home-tool-card__number">05</span><div><h3 data-i18n="computerToolTitle">Computer Calculator</h3><button class="primary-action" type="button" data-view-target="computer-calculator" data-i18n="openComputer">Open Computer Calculator</button></div></article>
+                <article class="home-tool-card"><span class="home-tool-card__number">06</span><div><h3 data-i18n="economicsToolTitle">Economics Calculator</h3><button class="primary-action" type="button" data-view-target="economics-calculator" data-i18n="openEconomics">Open Economics Calculator</button></div></article>
               </div>
             </section>
 
@@ -195,6 +198,7 @@
                     <button type="button" data-matrix-example="product" data-i18n="matrixExampleProduct">Rectangular product</button>
                     <button type="button" data-matrix-example="determinant" data-i18n="matrixExampleDeterminant">3 × 3 determinant</button>
                     <button type="button" data-matrix-example="eigen" data-i18n="matrixExampleEigen">Eigenpairs</button>
+                    <button type="button" data-matrix-example="solve" data-i18n="matrixExampleSolve">Solve a system</button>
                   </div>
                 </div>
               </header>
@@ -208,6 +212,11 @@
                 <button type="button" data-matrix-operation="adjugate" aria-pressed="false"><strong>adj(A)</strong><span data-i18n="matrixAdjugateShort">Adjugate</span></button>
                 <button type="button" data-matrix-operation="eigen" aria-pressed="false"><strong>eig(A)</strong><span data-i18n="matrixEigenShort">Eigenpairs</span></button>
                 <button type="button" data-matrix-operation="determinant" aria-pressed="false"><strong>det(A)</strong><span data-i18n="matrixDeterminantShort">Determinant</span></button>
+                <button type="button" data-matrix-operation="rref" aria-pressed="false"><strong>rref(A)</strong><span data-i18n="matrixRrefShort">RREF</span></button>
+                <button type="button" data-matrix-operation="rank" aria-pressed="false"><strong>rank(A)</strong><span data-i18n="matrixRankShort">Rank</span></button>
+                <button type="button" data-matrix-operation="trace" aria-pressed="false"><strong>tr(A)</strong><span data-i18n="matrixTraceShort">Trace</span></button>
+                <button type="button" data-matrix-operation="norm" aria-pressed="false"><strong>‖A‖F</strong><span data-i18n="matrixNormShort">Frobenius norm</span></button>
+                <button type="button" data-matrix-operation="solve" aria-pressed="false"><strong>AX = B</strong><span data-i18n="matrixSolveShort">Solve</span></button>
               </div>
 
               <div class="matrix-expression-preview" aria-live="polite"><span data-i18n="matrixOperation">Operation</span><strong id="matrix-expression">A + B</strong></div>
@@ -241,6 +250,11 @@
                   <option value="adjugate" data-i18n="matrixAdjugate">Adjugate of A</option>
                   <option value="eigen" data-i18n="matrixEigen">Eigenvalues &amp; eigenvectors of A</option>
                   <option value="determinant" data-i18n="matrixDeterminant">Determinant of A</option>
+                  <option value="rref" data-i18n="matrixRref">Reduced row echelon form of A</option>
+                  <option value="rank" data-i18n="matrixRank">Rank of A</option>
+                  <option value="trace" data-i18n="matrixTrace">Trace of A</option>
+                  <option value="norm" data-i18n="matrixNorm">Frobenius norm of A</option>
+                  <option value="solve" data-i18n="matrixSolve">Solve AX = B</option>
                 </select></label>
                 <button class="matrix-swap" id="matrix-swap" type="button"><span aria-hidden="true">⇄</span><span data-i18n="matrixSwap">Swap A and B</span></button>
                 <button class="primary-action matrix-calculate" id="matrix-calculate" type="button" data-i18n="calculateMatrix">Calculate</button>
@@ -254,6 +268,74 @@
             </div>
 
             <footer class="content-footer"><span data-i18n="projectFooter">SciCal600 · independent educational project</span><button type="button" class="text-action" data-view-target="calculator" data-i18n="openScientific">Open scientific calculator</button></footer>
+          </div>
+        </section>
+
+        <section class="app-view app-view--scrollable" data-view-panel="statistics-calculator" hidden>
+          <div class="content-page content-page--computer content-page--analysis" id="statistics-calculator">
+            <div class="computer-hero analysis-hero">
+              <div><p class="eyebrow" data-i18n="statisticsEyebrow">Smart Calculator · Statistics</p><h1 data-i18n="statisticsTitle">Understand a dataset, not just one answer.</h1><p class="content-page__lead" data-i18n="statisticsIntro">Paste values for a complete descriptive summary. Add a matching Y series for covariance, correlation, and least-squares regression.</p></div>
+            </div>
+            <form id="statistics-form" class="computer-tool-grid" novalidate>
+              <article class="computer-tool-card">
+                <h3 data-i18n="statisticsDataTitle">Data</h3>
+                <label><span data-i18n="statisticsDataX">Data X</span><textarea id="statistics-x" rows="7" spellcheck="false" inputmode="decimal" aria-describedby="statistics-input-hint">12, 15, 15, 18, 21, 24, 27, 30</textarea></label>
+                <label><span data-i18n="statisticsDataY">Data Y (optional, paired)</span><textarea id="statistics-y" rows="4" spellcheck="false" inputmode="decimal" aria-describedby="statistics-input-hint"></textarea></label>
+                <p class="source-note" id="statistics-input-hint" data-i18n="statisticsInputHint">Separate values with spaces, commas, semicolons, or new lines. X and Y must have equal lengths for paired analysis.</p>
+                <div class="button-row"><button class="primary-action" id="statistics-calculate" type="submit" data-i18n="calculateStatistics">Calculate statistics</button><button id="statistics-example" type="button" data-i18n="loadExample">Load example</button><button id="statistics-clear" type="button" data-i18n="clearData">Clear data</button></div>
+                <div class="data-status" id="statistics-status" role="status" aria-live="polite"></div>
+              </article>
+              <article class="computer-tool-card">
+                <h3 data-i18n="descriptiveSummary">Descriptive summary</h3>
+                <div class="computer-result" id="statistics-summary" aria-live="polite"><span data-i18n="statisticsReady">Enter Data X and calculate.</span></div>
+              </article>
+              <article class="computer-tool-card computer-tool-card--wide" id="statistics-frequency-card" hidden>
+                <h3 data-i18n="frequencyTable">Frequency table</h3>
+                <div class="analysis-table-scroll"><table class="analysis-table"><thead><tr><th data-i18n="valueLabel">Value</th><th data-i18n="frequencyLabel">Frequency</th><th data-i18n="relativeFrequency">Relative</th><th data-i18n="cumulativeFrequency">Cumulative</th></tr></thead><tbody id="statistics-frequency-body"></tbody></table></div>
+              </article>
+              <article class="computer-tool-card computer-tool-card--wide" id="statistics-bivariate-card" hidden>
+                <h3 data-i18n="pairedAnalysis">Paired analysis &amp; linear regression</h3>
+                <div class="computer-result" id="statistics-bivariate"></div>
+              </article>
+            </form>
+            <footer class="content-footer"><span data-i18n="statisticsFooter">Statistics Calculator · calculations stay in your browser</span><button type="button" class="text-action" data-view-target="about" data-i18n="backToTools">Back to tools</button></footer>
+          </div>
+        </section>
+
+        <section class="app-view app-view--scrollable" data-view-panel="probability-calculator" hidden>
+          <div class="content-page content-page--computer content-page--analysis" id="probability-calculator">
+            <div class="computer-hero analysis-hero">
+              <div><p class="eyebrow" data-i18n="probabilityEyebrow">Smart Calculator · Probability</p><h1 data-i18n="probabilityTitle">Events and distributions in one workspace.</h1><p class="content-page__lead" data-i18n="probabilityIntro">Calculate event relationships, arrangements, and common discrete and continuous probability models with input checks.</p></div>
+            </div>
+            <div class="computer-tool-grid probability-grid">
+              <form class="computer-tool-card" id="event-probability-form" novalidate>
+                <h3 data-i18n="eventProbabilityTitle">Event relationships</h3>
+                <div class="field-grid"><label><span>P(A)</span><input id="probability-a" type="number" min="0" max="1" step="any" value="0.5"></label><label><span>P(B)</span><input id="probability-b" type="number" min="0" max="1" step="any" value="0.4"></label><label><span>P(A ∩ B)</span><input id="probability-intersection" type="number" min="0" max="1" step="any" value="0.2"></label></div>
+                <button class="primary-action" type="submit" data-i18n="calculateEvents">Calculate events</button><div class="computer-result" id="event-probability-result" aria-live="polite"></div>
+              </form>
+              <form class="computer-tool-card" id="combinatorics-form" novalidate>
+                <h3 data-i18n="combinatoricsTitle">Combinations &amp; permutations</h3>
+                <div class="field-grid"><label><span>n</span><input id="combinatorics-n" type="number" min="0" max="170" step="1" value="10"></label><label><span>r</span><input id="combinatorics-r" type="number" min="0" max="170" step="1" value="3"></label></div>
+                <button class="primary-action" type="submit" data-i18n="calculateArrangements">Calculate arrangements</button><div class="computer-result" id="combinatorics-result" aria-live="polite"></div>
+              </form>
+              <form class="computer-tool-card" id="binomial-form" novalidate>
+                <h3 data-i18n="binomialTitle">Binomial distribution</h3>
+                <div class="field-grid"><label><span>n</span><input id="binomial-n" type="number" min="0" max="1000" step="1" value="10"></label><label><span>p</span><input id="binomial-p" type="number" min="0" max="1" step="any" value="0.5"></label><label><span>k</span><input id="binomial-k" type="number" min="0" max="1000" step="1" value="3"></label></div>
+                <button class="primary-action" type="submit" data-i18n="calculateBinomial">Calculate binomial</button><div class="computer-result" id="binomial-result" aria-live="polite"></div>
+              </form>
+              <form class="computer-tool-card" id="poisson-form" novalidate>
+                <h3 data-i18n="poissonTitle">Poisson distribution</h3>
+                <div class="field-grid"><label><span>λ</span><input id="poisson-lambda" type="number" min="0" max="10000" step="any" value="4"></label><label><span>k</span><input id="poisson-k" type="number" min="0" max="10000" step="1" value="2"></label></div>
+                <button class="primary-action" type="submit" data-i18n="calculatePoisson">Calculate Poisson</button><div class="computer-result" id="poisson-result" aria-live="polite"></div>
+              </form>
+              <form class="computer-tool-card computer-tool-card--wide" id="normal-form" novalidate>
+                <h3 data-i18n="normalTitle">Normal distribution</h3>
+                <div class="field-grid"><label><span data-i18n="meanLabel">Mean μ</span><input id="normal-mean" type="number" step="any" value="0"></label><label><span data-i18n="standardDeviationLabel">Standard deviation σ</span><input id="normal-sd" type="number" min="0" step="any" value="1"></label><label><span data-i18n="lowerBound">Lower bound</span><input id="normal-lower" type="number" step="any" value="-1.96"></label><label><span data-i18n="upperBound">Upper bound</span><input id="normal-upper" type="number" step="any" value="1.96"></label><label><span data-i18n="percentileProbability">Percentile p</span><input id="normal-percentile" type="number" min="0" max="1" step="any" value="0.975"></label></div>
+                <button class="primary-action" type="submit" data-i18n="calculateNormal">Calculate normal probabilities</button><div class="computer-result" id="normal-result" aria-live="polite"></div>
+              </form>
+            </div>
+            <p class="source-note" data-i18n="probabilityNote">Results are numerical educational calculations. Check the assumptions of your real experiment or statistical model.</p>
+            <footer class="content-footer"><span data-i18n="probabilityFooter">Probability Calculator · calculations stay in your browser</span><button type="button" class="text-action" data-view-target="about" data-i18n="backToTools">Back to tools</button></footer>
           </div>
         </section>
 
@@ -440,6 +522,6 @@ Transport: 1500</textarea></label><button type="button" id="budget-calculate" da
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="calculator-core.js"></script><script src="calculator-data.js"></script><script src="linear-algebra-core.js"></script><script src="computer-core.js"></script><script src="economics-core.js"></script><script src="linear-algebra-i18n.js"></script><script src="computer-i18n.js"></script><script src="economics-i18n.js"></script><script src="additional-locales.js"></script><script src="app.js"></script><script src="site-ui.js"></script><script src="linear-algebra.js"></script><script src="computer-calculator.js"></script><script src="economics-calculator.js"></script><script src="love-heart.js"></script>
+    <script src="calculator-core.js"></script><script src="calculator-data.js"></script><script src="linear-algebra-core.js"></script><script src="statistics-core.js"></script><script src="probability-core.js"></script><script src="computer-core.js"></script><script src="economics-core.js"></script><script src="linear-algebra-i18n.js"></script><script src="statistics-probability-i18n.js"></script><script src="computer-i18n.js"></script><script src="economics-i18n.js"></script><script src="additional-locales.js"></script><script src="app.js"></script><script src="site-ui.js"></script><script src="linear-algebra.js"></script><script src="statistics-calculator.js"></script><script src="probability-calculator.js"></script><script src="computer-calculator.js"></script><script src="economics-calculator.js"></script><script src="love-heart.js"></script>
   </body>
 </html>

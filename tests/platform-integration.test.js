@@ -24,7 +24,7 @@ function loadAdditionalLocales() {
 }
 
 test("resolves every calculator translation key for all languages", () => {
-  for (const [file, name] of [["linear-algebra-i18n.js","SciCalLinearTranslations"],["computer-i18n.js","SciCalComputerTranslations"],["economics-i18n.js","SciCalEconomicsTranslations"]]) {
+  for (const [file, name] of [["linear-algebra-i18n.js","SciCalLinearTranslations"],["statistics-probability-i18n.js","SciCalAnalysisTranslations"],["computer-i18n.js","SciCalComputerTranslations"],["economics-i18n.js","SciCalEconomicsTranslations"]]) {
     const dictionaries = loadTranslations(file, name);
     assert.deepEqual(Object.keys(dictionaries).sort(), ["ar","de","en-GB","es","fr","ja","ko","ms","zh-Hans","zh-Hant"].sort());
     const englishKeys = Object.keys(dictionaries["en-GB"]).sort();
@@ -41,10 +41,14 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   const build = read("scripts/build-static.mjs");
   assert.match(html, /data-view-panel="computer-calculator"/);
   assert.match(html, /data-view-panel="economics-calculator"/);
+  assert.match(html, /data-view-panel="statistics-calculator"/);
+  assert.match(html, /data-view-panel="probability-calculator"/);
   assert.match(redirects, /\/about\/ \/about 301/);
   assert.doesNotMatch(redirects, /^\/about \/ 301/m);
   assert.match(redirects, /\/computer-calculator\/ \/computer-calculator 301/);
   assert.match(redirects, /\/economics-calculator\/ \/economics-calculator 301/);
+  assert.match(redirects, /\/statistics-calculator\/ \/statistics-calculator 301/);
+  assert.match(redirects, /\/probability-calculator\/ \/probability-calculator 301/);
   assert.match(redirects, /\/lmc \/lmc\/ 301/);
   assert.match(redirects, /\/systembussing \/systembussing\/ 301/);
   assert.match(html, /href="https:\/\/lmc\.scical600\.pages\.dev\/"/);
@@ -65,7 +69,7 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   assert.match(loveHeartSource, /int main\(void\)/);
   assert.match(loveHeartSource, /pow\(x \* x \+ y \* y - 1\.0, 3\.0\)/);
   assert.match(loveHeartSource, /38;2;%d;%d;%dm/);
-  for (const asset of ["linear-algebra-i18n.js","additional-locales.js","computer-core.js","computer-calculator.js","computer-calculator.css","economics-core.js","economics-calculator.js","economics-calculator.css"]) {
+  for (const asset of ["linear-algebra-i18n.js","statistics-core.js","statistics-calculator.js","probability-core.js","probability-calculator.js","statistics-probability-i18n.js","statistics-probability.css","additional-locales.js","computer-core.js","computer-calculator.js","computer-calculator.css","economics-core.js","economics-calculator.js","economics-calculator.css"]) {
     assert.ok(html.includes(asset) || asset.endsWith(".css") && html.includes(asset), `${asset} in HTML`);
     assert.ok(build.includes(`"${asset}"`), `${asset} in build manifest`);
   }
@@ -360,7 +364,7 @@ test("keeps Android system-bar content legible over the edge-to-edge dark shell"
 });
 
 test("does not ship known client-side secret patterns", () => {
-  const client = ["index.html","linear-algebra.js","linear-algebra-i18n.js","additional-locales.js","computer-calculator.js","economics-calculator.js","computer-i18n.js","economics-i18n.js"].map(read).join("\n");
+  const client = ["index.html","linear-algebra.js","linear-algebra-i18n.js","statistics-calculator.js","probability-calculator.js","statistics-probability-i18n.js","additional-locales.js","computer-calculator.js","economics-calculator.js","computer-i18n.js","economics-i18n.js"].map(read).join("\n");
   assert.doesNotMatch(client, /api[_-]?key\s*[:=]\s*["'][A-Za-z0-9_-]{12,}/i);
   assert.doesNotMatch(client, /ExchangeRate-API.*key=/i);
 });

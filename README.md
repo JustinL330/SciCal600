@@ -89,6 +89,8 @@ The iOS GitHub job builds an unsigned Simulator app. Physical-device distributio
 - Degree, radian, and grad angle units
 - `Ans`, independent memory, fractions/decimals, DMS, normal/fixed/scientific/engineering notation
 - Complex arithmetic in rectangular and polar form
+- Linear Algebra with matrix arithmetic, determinant, inverse, eigenpairs, RREF, rank, trace, Frobenius norm, and linear-system solving
+- Dedicated Statistics and Probability workspaces for descriptive and paired analysis, combinatorics, event probabilities, and binomial, Poisson, and normal distributions
 - BASE-N arithmetic and logical operations
 - Weighted single-variable statistics and multiple regression models
 - Four persistent program areas with safe execution controls
