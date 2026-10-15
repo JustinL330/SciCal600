@@ -2446,6 +2446,7 @@ button.is-pressed,
 .home-tool-card .primary-action {
   min-height: 44px;
   margin-top: 22px;
+  text-decoration: none;
 }
 
 .content-page--home .content-footer {

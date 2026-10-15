@@ -45,6 +45,13 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   assert.doesNotMatch(redirects, /^\/about \/ 301/m);
   assert.match(redirects, /\/computer-calculator\/ \/computer-calculator 301/);
   assert.match(redirects, /\/economics-calculator\/ \/economics-calculator 301/);
+  assert.match(redirects, /\/lmc \/lmc\/ 301/);
+  assert.match(redirects, /\/systembussing \/systembussing\/ 301/);
+  assert.match(html, /href="\/lmc\/"/);
+  assert.match(html, /href="\/systembussing\/"/);
+  for (const auxiliaryFile of ["lmc/index.html", "systembussing/index.html", "systembussing/sw.js", "systembussing/manifest.webmanifest", "systembussing/icon.svg"]) {
+    assert.ok(build.includes(`"${auxiliaryFile}"`), `${auxiliaryFile} in build manifest`);
+  }
   for (const asset of ["linear-algebra-i18n.js","additional-locales.js","computer-core.js","computer-calculator.js","computer-calculator.css","economics-core.js","economics-calculator.js","economics-calculator.css"]) {
     assert.ok(html.includes(asset) || asset.endsWith(".css") && html.includes(asset), `${asset} in HTML`);
     assert.ok(build.includes(`"${asset}"`), `${asset} in build manifest`);

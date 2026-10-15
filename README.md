@@ -2,6 +2,11 @@
 
 SciCal600 is an independent Smart Calculator platform for Web, Android, iOS, macOS, and Windows. The same product-neutral calculation engines power the scientific, Linear Algebra, Computer Calculator, and Economics Calculator workspaces.
 
+SciCal600 is the primary project. This repository also keeps two standalone auxiliary COMP2660 calculators:
+
+- [`lmc/`](lmc/): Little Man's Computer assembler and simulator
+- [`systembussing/`](systembussing/): CPU, register, memory, control-signal, and system-bus simulator
+
 ## Download and use
 
 - **Web:** https://scical600.pages.dev/
@@ -25,6 +30,8 @@ Direct Web routes:
 - `/linear-algebra`
 - `/computer-calculator`
 - `/economics-calculator`
+- `/lmc/`
+- `/systembussing/`
 - `/manual`
 - `/about`
 

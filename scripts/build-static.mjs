@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 
 const outputDirectory = resolve("dist");
 const publicFiles = [
@@ -22,6 +22,11 @@ const publicFiles = [
   "economics-calculator.js",
   "economics-calculator.css",
   "site-ui.js",
+  "lmc/index.html",
+  "systembussing/index.html",
+  "systembussing/sw.js",
+  "systembussing/manifest.webmanifest",
+  "systembussing/icon.svg",
   "_redirects",
 ];
 
@@ -47,7 +52,9 @@ mkdirSync(outputDirectory, { recursive: true });
 
 for (const file of publicFiles) {
   const source = readFileSync(resolve(file), "utf8");
-  writeFileSync(resolve(outputDirectory, file), makeProductNeutral(source));
+  const destination = resolve(outputDirectory, file);
+  mkdirSync(dirname(destination), { recursive: true });
+  writeFileSync(destination, makeProductNeutral(source));
 }
 
 console.log(`Prepared ${publicFiles.length} product-neutral website files in dist/.`);

@@ -6,6 +6,7 @@ release/
 .desktop-build/
 client-artifacts/
 .cache/
+.wrangler/
 *.jks
 *.keystore
 *.apk
