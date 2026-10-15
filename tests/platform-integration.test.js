@@ -55,6 +55,16 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   const deploymentWorkflow = read(".github/workflows/cloudflare-pages.yml");
   assert.match(deploymentWorkflow, /pages deploy dist\/lmc --project-name=scical600 --branch=lmc/);
   assert.match(deploymentWorkflow, /pages deploy dist\/systembussing --project-name=scical600 --branch=systembussing/);
+  for (const easterEggAsset of ["love-heart.js", "love-heart.c"]) {
+    assert.ok(build.includes(`"${easterEggAsset}"`), `${easterEggAsset} in build manifest`);
+  }
+  assert.match(html, /id="love-egg-button"/);
+  assert.match(html, /id="love-egg-dialog"/);
+  assert.match(html, /src="love-heart\.js"/);
+  const loveHeartSource = read("love-heart.c");
+  assert.match(loveHeartSource, /int main\(void\)/);
+  assert.match(loveHeartSource, /pow\(x \* x \+ y \* y - 1\.0, 3\.0\)/);
+  assert.match(loveHeartSource, /38;2;%d;%d;%dm/);
   for (const asset of ["linear-algebra-i18n.js","additional-locales.js","computer-core.js","computer-calculator.js","computer-calculator.css","economics-core.js","economics-calculator.js","economics-calculator.css"]) {
     assert.ok(html.includes(asset) || asset.endsWith(".css") && html.includes(asset), `${asset} in HTML`);
     assert.ok(build.includes(`"${asset}"`), `${asset} in build manifest`);

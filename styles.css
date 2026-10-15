@@ -1390,11 +1390,48 @@ body.is-calculator-view {
 }
 
 .app-bar .brand {
-  justify-self: center;
+  justify-self: auto;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
+}
+
+.brand-cluster {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-self: center;
+}
+
+.love-egg-button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 112, 177, 0.36);
+  border-radius: 50%;
+  background: rgba(255, 70, 145, 0.1);
+  color: #ff7db6;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(255, 86, 159, 0.32));
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.love-egg-button:hover,
+.love-egg-button:focus-visible {
+  border-color: rgba(255, 142, 195, 0.82);
+  background: rgba(255, 70, 145, 0.2);
+  color: #ffd0e5;
+  transform: scale(1.08);
+}
+
+.love-egg-button span {
+  animation: title-heartbeat 1.35s ease-in-out infinite;
 }
 
 .brand__identity {
@@ -3660,4 +3697,194 @@ button.is-pressed {
 
 .app-view--calculator.is-entering .calculator-dock {
   animation: rise-in 380ms var(--ease-ios) 60ms backwards;
+}
+
+/* Colourful C love-heart Easter egg */
+.love-egg-dialog {
+  width: min(720px, calc(100% - 24px));
+  overflow: hidden auto;
+}
+
+.love-egg-dialog__body {
+  padding: clamp(18px, 4vw, 30px);
+}
+
+.love-egg-dialog .panel-dialog__header {
+  margin-bottom: 18px;
+}
+
+.love-egg-dialog h2 {
+  max-width: 520px;
+}
+
+.love-stage {
+  position: relative;
+  display: grid;
+  min-height: clamp(220px, 40vw, 310px);
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 25% 25%, rgba(67, 236, 214, 0.23), transparent 28%),
+    radial-gradient(circle at 78% 24%, rgba(119, 98, 255, 0.27), transparent 30%),
+    radial-gradient(circle at 50% 78%, rgba(255, 65, 143, 0.3), transparent 38%),
+    #07121c;
+  isolation: isolate;
+}
+
+.love-stage::before {
+  position: absolute;
+  width: 78%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  content: "";
+  animation: love-orbit 9s linear infinite;
+}
+
+.love-stage::after {
+  position: absolute;
+  width: 46%;
+  aspect-ratio: 1;
+  border: 1px dashed rgba(119, 236, 255, 0.18);
+  border-radius: 50%;
+  content: "";
+  animation: love-orbit 6s linear infinite reverse;
+}
+
+.love-heart {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg, #72f8e0 2%, #7a8cff 32%, #ff65b2 62%, #ffbf5f 96%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-size: clamp(112px, 26vw, 190px);
+  line-height: 0.8;
+  filter: drop-shadow(0 0 12px rgba(255, 89, 164, 0.55)) drop-shadow(0 0 42px rgba(113, 128, 255, 0.36));
+  animation: love-heartbeat 1.18s ease-in-out infinite, love-hue 5.5s linear infinite;
+  transform-origin: center;
+  user-select: none;
+}
+
+.love-stage p {
+  position: absolute;
+  z-index: 3;
+  bottom: 16px;
+  margin: 0;
+  color: rgba(232, 246, 248, 0.82);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.love-stage p span {
+  color: #ff7db6;
+}
+
+.love-spark {
+  position: absolute;
+  z-index: 3;
+  color: #fff;
+  filter: drop-shadow(0 0 8px currentColor);
+  animation: love-float 2.8s ease-in-out infinite;
+}
+
+.love-spark--one { top: 17%; left: 18%; color: #72f8e0; font-size: 25px; }
+.love-spark--two { top: 22%; right: 21%; color: #ffbf5f; font-size: 12px; animation-delay: -0.7s; }
+.love-spark--three { right: 15%; bottom: 24%; color: #9aa7ff; font-size: 28px; animation-delay: -1.4s; }
+.love-spark--four { bottom: 21%; left: 24%; color: #ff77b9; font-size: 9px; animation-delay: -2.1s; }
+
+.love-egg-copy {
+  margin: 18px 0;
+  color: #9cafb8;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.love-source-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(4, 11, 17, 0.7);
+}
+
+.love-source-card summary {
+  padding: 13px 15px;
+  color: #c5d6db;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.love-source-card pre {
+  max-height: 260px;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #bdebdc;
+  font: 11px/1.65 var(--mono);
+  tab-size: 4;
+  white-space: pre;
+}
+
+.love-egg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.love-egg-actions .primary-action {
+  min-height: 42px;
+  margin: 0;
+  text-decoration: none;
+}
+
+@keyframes title-heartbeat {
+  0%, 38%, 100% { transform: scale(1); }
+  12% { transform: scale(1.22); }
+  22% { transform: scale(1.04); }
+  30% { transform: scale(1.15); }
+}
+
+@keyframes love-heartbeat {
+  0%, 36%, 100% { transform: scale(0.92) rotate(-1deg); }
+  12% { transform: scale(1.08) rotate(1deg); }
+  22% { transform: scale(0.97) rotate(-0.5deg); }
+  29% { transform: scale(1.04) rotate(0.5deg); }
+}
+
+@keyframes love-hue {
+  to { filter: hue-rotate(360deg) drop-shadow(0 0 12px rgba(255, 89, 164, 0.55)) drop-shadow(0 0 42px rgba(113, 128, 255, 0.36)); }
+}
+
+@keyframes love-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes love-float {
+  0%, 100% { opacity: 0.45; transform: translateY(4px) scale(0.85); }
+  50% { opacity: 1; transform: translateY(-7px) scale(1.12); }
+}
+
+@media (max-width: 420px) {
+  .brand-cluster { gap: 4px; }
+  .love-egg-button { width: 32px; height: 32px; flex-basis: 32px; font-size: 16px; }
+  .love-egg-dialog .panel-dialog__header h2 { font-size: 24px; }
+  .love-egg-actions > * { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .love-egg-button span,
+  .love-heart,
+  .love-stage::before,
+  .love-stage::after,
+  .love-spark {
+    animation: none;
+  }
 }

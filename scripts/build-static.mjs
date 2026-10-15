@@ -22,6 +22,8 @@ const publicFiles = [
   "economics-calculator.js",
   "economics-calculator.css",
   "site-ui.js",
+  "love-heart.js",
+  "love-heart.c",
   "lmc/index.html",
   "systembussing/index.html",
   "systembussing/sw.js",

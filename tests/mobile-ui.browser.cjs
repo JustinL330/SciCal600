@@ -12,6 +12,7 @@ const root = path.join(projectRoot, "dist");
 const chromePath = process.env.SCICAL_CHROME_PATH;
 
 const mimeTypes = {
+  ".c": "text/plain; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -141,8 +142,8 @@ async function checkLayout(page, viewport) {
 async function checkCompactHome(page, viewport) {
   await page.goto("/", { waitUntil: "networkidle" });
   const metrics = await page.evaluate(() => {
-    const cards = [...document.querySelectorAll(".home-tools:not(.native-availability) .home-tool-card")].map((card) => card.getBoundingClientRect());
-    const buttons = [...document.querySelectorAll(".home-tools:not(.native-availability) .home-tool-card .primary-action")].map((button) => button.getBoundingClientRect());
+    const cards = [...document.querySelectorAll(".home-tools--primary .home-tool-card")].map((card) => card.getBoundingClientRect());
+    const buttons = [...document.querySelectorAll(".home-tools--primary .home-tool-card .primary-action")].map((button) => button.getBoundingClientRect());
     return {
       cardCount: cards.length,
       buttonCount: buttons.length,
@@ -160,6 +161,12 @@ async function checkCompactHome(page, viewport) {
   assert.ok(metrics.buttonHeights.every((height) => height >= 44), `${viewport.name}: home actions should have mobile touch targets (${metrics.buttonHeights.join(", ")}px)`);
   assert.ok(metrics.documentWidth <= metrics.innerWidth, `${viewport.name}: home page horizontal overflow`);
   assert.equal(metrics.removedCopyCount, 0, `${viewport.name}: redundant home-page copy should be removed`);
+  await page.locator("#love-egg-button").click();
+  assert.equal(await page.locator("#love-egg-dialog").isVisible(), true, `${viewport.name}: love-heart Easter egg opens from the title`);
+  await page.waitForFunction(() => document.querySelector("#love-source-code")?.textContent.includes("int main(void)"));
+  assert.match(await page.locator("#love-source-code").textContent(), /SciCal600 colourful love-heart Easter egg/);
+  await page.locator("#love-egg-close").click();
+  assert.equal(await page.locator("#love-egg-dialog").isHidden(), true, `${viewport.name}: love-heart Easter egg closes`);
   return metrics;
 }
 
@@ -345,7 +352,7 @@ async function runFunctionalChecks(page) {
   await page.goto("/", { waitUntil: "networkidle" });
   assert.equal(await page.locator('[data-view-panel="about"]').isVisible(), true, "root platform page");
   assert.match(await page.locator('[data-view-panel="about"] h1').textContent(), /math/i);
-  assert.equal(await page.locator(".home-tools:not(.native-availability) .home-tool-card").count(), 4, "home should show all four calculators at equal prominence");
+  assert.equal(await page.locator(".home-tools:not(.native-availability) .home-tool-card").count(), 6, "home should show four primary and two companion calculators");
   assert.equal(await page.locator("#language-select option").count(), 12, "language picker should expose twelve languages");
   const localizedTitles = new Set();
   const localizedAndroidLabels = new Set();

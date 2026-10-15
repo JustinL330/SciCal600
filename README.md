@@ -96,6 +96,7 @@ The iOS GitHub job builds an unsigned Simulator app. Physical-device distributio
 - Economics tools for FX reference data, Hong Kong public rates, interest, savings, mortgage scenarios, APR/IRR, amortization, budgeting, and real returns
 - Twelve interface languages and responsive phone/desktop layouts
 - Parser implementation without JavaScript `eval`
+- A title-bar heart Easter egg with a browser animation and downloadable ANSI-terminal C11 source
 
 ## Cloudflare Pages
 
