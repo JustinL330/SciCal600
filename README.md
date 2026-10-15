@@ -2,7 +2,7 @@
 
 SciCal600 is an independent Smart Calculator platform for Web, Android, iOS, macOS, and Windows. The same product-neutral calculation engines power the scientific, Linear Algebra, Computer Calculator, and Economics Calculator workspaces.
 
-SciCal600 is the primary project. This repository also keeps two standalone auxiliary COMP2660 calculators:
+SciCal600 is the primary project. This repository also keeps two standalone auxiliary computer-architecture calculators:
 
 - [`lmc/`](lmc/): Little Man's Computer assembler and simulator
 - [`systembussing/`](systembussing/): CPU, register, memory, control-signal, and system-bus simulator
@@ -21,6 +21,8 @@ Main-branch client builds are automated. macOS and Windows packages are currentl
 SciCal600 does not require a specific third-party calculator, firmware, ROM, manual, logo, product artwork, or proprietary calculator service to run. Calculation behavior is implemented in this repository. Production bundles are checked for legacy third-party product labels before native packaging.
 
 See [BRAND-INDEPENDENCE.md](BRAND-INDEPENDENCE.md) for the repository policy. This engineering policy reduces avoidable brand/copying risk but is not a substitute for legal review before commercial distribution or advertising.
+
+Copyright-safety rules, dependency licenses, external data sources, and the pre-release checklist are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The package is marked `UNLICENSED` until ownership and contributor permissions are confirmed and the maintainer deliberately selects a source-code license.
 
 ## Workspaces
 

@@ -24,6 +24,7 @@ const publicFiles = [
   "site-ui.js",
   "love-heart.js",
   "love-heart.c",
+  "THIRD_PARTY_NOTICES.md",
   "lmc/index.html",
   "systembussing/index.html",
   "systembussing/sw.js",
@@ -57,6 +58,11 @@ for (const file of publicFiles) {
   const destination = resolve(outputDirectory, file);
   mkdirSync(dirname(destination), { recursive: true });
   writeFileSync(destination, makeProductNeutral(source));
+}
+
+const notices = readFileSync(resolve("THIRD_PARTY_NOTICES.md"), "utf8");
+for (const directory of ["lmc", "systembussing"]) {
+  writeFileSync(resolve(outputDirectory, directory, "THIRD_PARTY_NOTICES.md"), notices);
 }
 
 console.log(`Prepared ${publicFiles.length} product-neutral website files in dist/.`);

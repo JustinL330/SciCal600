@@ -5,6 +5,13 @@ const root = resolve(process.argv[2] || "dist");
 const blocked = [
   ["Ca", "sio"].join(""),
   ["fx", "-50FH"].join(""),
+  "COMP2660",
+  "supplied video",
+  "reproduces the video",
+  "video demo",
+  "recreated from",
+  "lecture slide",
+  "LOAD instruction photo",
 ];
 const textExtensions = new Set([".html", ".js", ".css", ".json", ".txt", ".md", ""]);
 const hits = [];
@@ -24,7 +31,7 @@ function scan(path) {
 
 scan(root);
 if (hits.length) {
-  console.error("Product-neutrality check failed:\n" + hits.join("\n"));
+  console.error("Product-neutrality and source-safety check failed:\n" + hits.join("\n"));
   process.exit(1);
 }
-console.log(`Product-neutrality check passed for ${root}.`);
+console.log(`Product-neutrality and source-safety check passed for ${root}.`);

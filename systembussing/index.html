@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="SystemBussing COMP2660 CPU, memory, control-signal, and system-bus simulator."><title>SystemBussing · COMP2660 CPU Simulator</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="SystemBussing educational CPU, memory, control-signal, and system-bus simulator."><title>SystemBussing · SciCal600 CPU Simulator</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
 
 <meta name="theme-color" content="#205ab5">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -44,15 +44,15 @@ button,select{min-height:44px;touch-action:manipulation}input,textarea{font-size
 <g id="clockMemory" class="wire"><path d="M921 1038 H939 V1007 H970 V1038 H995 V1007 H1026 V1038 H1045"/><text x="985" y="1070" text-anchor="middle" fill="#252525" stroke="none" font-size="18">Clock</text></g>
 </svg>
 </div>
-<details><summary data-en="Instruction bits" data-zh="指令編碼">Instruction bits</summary><div id="binary"></div><p class="note" data-en="Lecture slides 18 and 24: the upper 16 bits contain the opcode; the lower 16 bits contain the LOAD/STORE address. IN/OUT are teaching extensions from the video; their binary encodings are not specified in the slides." data-zh="課件第 18、24 頁：高 16 位為 opcode，低 16 位為 LOAD/STORE 位址。IN/OUT 是影片中的教學擴充，課件未指定其二進位編碼。">Lecture slides 18 and 24: the upper 16 bits contain the opcode; the lower 16 bits contain the LOAD/STORE address. IN/OUT are teaching extensions from the video; their binary encodings are not specified in the slides.</p></details>
-<details><summary data-en="Program &amp; memory" data-zh="程式與記憶體">Program &amp; memory</summary><p class="note" data-en="The default demo reproduces the video in 38 steps. Enter one instruction per line: IN R0, OUT ACC, LOAD [address], STORE [address], ADD, SUB, or NEG. Use DATA address value to initialize memory. Applying the program restarts execution from the first step." data-zh="預設完整重現影片的 38 步。每行一條指令，支援 IN R0、OUT ACC、LOAD [位址]、STORE [位址]、ADD、SUB、NEG。DATA 位址 值 可定義記憶體。確認後從第一步重新執行。">The default demo reproduces the video in 38 steps. Enter one instruction per line: IN R0, OUT ACC, LOAD [address], STORE [address], ADD, SUB, or NEG. Use DATA address value to initialize memory. Applying the program restarts execution from the first step.</p><textarea id="program" aria-label="Program editor" data-aria-en="Program editor" data-aria-zh="程式編輯器" spellcheck="false">IN R0
+<details><summary data-en="Instruction bits" data-zh="指令編碼">Instruction bits</summary><div id="binary"></div><p class="note" data-en="This project-defined teaching format stores the opcode in the upper 16 bits and the LOAD/STORE address in the lower 16 bits. IN/OUT use simulator-specific encodings." data-zh="本專案定義的教學格式將 opcode 放在高 16 位，LOAD/STORE 位址放在低 16 位；IN/OUT 採用模擬器自訂編碼。">This project-defined teaching format stores the opcode in the upper 16 bits and the LOAD/STORE address in the lower 16 bits. IN/OUT use simulator-specific encodings.</p></details>
+<details><summary data-en="Program &amp; memory" data-zh="程式與記憶體">Program &amp; memory</summary><p class="note" data-en="The default demo demonstrates a complete transfer sequence in 38 steps. Enter one instruction per line: IN R0, OUT ACC, LOAD [address], STORE [address], ADD, SUB, or NEG. Use DATA address value to initialize memory. Applying the program restarts execution from the first step." data-zh="預設示範以 38 個步驟呈現完整的資料傳送流程。每行一條指令，支援 IN R0、OUT ACC、LOAD [位址]、STORE [位址]、ADD、SUB、NEG。DATA 位址 值 可定義記憶體。確認後從第一步重新執行。">The default demo demonstrates a complete transfer sequence in 38 steps. Enter one instruction per line: IN R0, OUT ACC, LOAD [address], STORE [address], ADD, SUB, or NEG. Use DATA address value to initialize memory. Applying the program restarts execution from the first step.</p><textarea id="program" aria-label="Program editor" data-aria-en="Program editor" data-aria-zh="程式編輯器" spellcheck="false">IN R0
 LOAD [200]
 ADD
 STORE [201]
 OUT ACC
 
-DATA 200 3</textarea><div class="settings"><button id="apply" data-en="Apply program" data-zh="套用程式">Apply program</button><button id="demo" data-en="Restore video demo" data-zh="還原影片示範">Restore video demo</button></div><div id="error" role="alert"></div></details>
-<p class="caption" data-en="Recreated from the supplied video (approximately 75 seconds), Lecture 4 (slides 15, 18, 24–25, 30–32 and 35), and the LOAD instruction photo. ADD: ACC + R0; SUB: ACC − R0; NEG: −ACC. Arithmetic uses signed 32-bit integers." data-zh="根據使用者提供的約 75 秒影片、Lecture 4（第 15、18、24–25、30–32、35 頁）及 LOAD 示意照片重建。ADD: ACC + R0；SUB: ACC − R0；NEG: −ACC。運算使用 32 位元有號整數。">Recreated from the supplied video (approximately 75 seconds), Lecture 4 (slides 15, 18, 24–25, 30–32 and 35), and the LOAD instruction photo. ADD: ACC + R0; SUB: ACC − R0; NEG: −ACC. Arithmetic uses signed 32-bit integers.</p>
+DATA 200 3</textarea><div class="settings"><button id="apply" data-en="Apply program" data-zh="套用程式">Apply program</button><button id="demo" data-en="Restore default demo" data-zh="還原預設示範">Restore default demo</button></div><div id="error" role="alert"></div></details>
+<p class="caption" data-en="This project-defined teaching architecture visualizes register, memory, ALU, I/O, and control-bus transfers. ADD computes ACC + R0; SUB computes ACC − R0; NEG computes −ACC. Arithmetic uses signed 32-bit integers." data-zh="本專案自訂的教學架構展示暫存器、記憶體、ALU、I/O 與控制匯流排的資料傳送。ADD 計算 ACC + R0；SUB 計算 ACC − R0；NEG 計算 −ACC。運算使用 32 位元有號整數。">This project-defined teaching architecture visualizes register, memory, ALU, I/O, and control-bus transfers. ADD computes ACC + R0; SUB computes ACC − R0; NEG computes −ACC. Arithmetic uses signed 32-bit integers.</p>
 <section id="offline-app" class="offline-section" aria-labelledby="offline-title">
 <h2 id="offline-title" data-en="Offline app" data-zh="離線 App">Offline app</h2>
 <p id="offline-status" class="offline-status" role="status" aria-live="polite">Preparing offline app…</p>
@@ -61,7 +61,8 @@ DATA 200 3</textarea><div class="settings"><button id="apply" data-en="Apply pro
 </section>
 <footer id="acknowledgements" lang="en" style="border-top:1px solid #ddd;padding:20px 0 28px;font-size:14px;line-height:1.7;color:#555">
 <strong>Acknowledgements</strong><br>
-Special thanks to <strong>sinx</strong> for providing the foundations for the program design, and to <strong>Prof. Bell LIU</strong> for providing the lecture slides that informed this simulator.
+Project-history thanks to <strong>sinx</strong> for an early program-design contribution and <strong>Prof. Bell LIU</strong> for the teaching context. No course slides, photographs, videos, or proprietary media are bundled.
+<br><a href="THIRD_PARTY_NOTICES.md">Copyright &amp; dependencies</a>
 </footer>
 </main>
 <nav class="mobile-dock" aria-label="Simulation step controls" data-aria-en="Simulation step controls" data-aria-zh="模擬步驟控制"><button id="mobile-prev">Previous</button><button id="mobile-play">Play</button><button id="mobile-next">Next →</button></nav>
@@ -187,7 +188,7 @@ $('download').onclick=()=>{
  copy.querySelectorAll('link[rel="manifest"],link[rel="apple-touch-icon"]').forEach(el=>el.remove());
  const html='<!doctype html>\n'+copy.outerHTML;
  const url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
- const link=document.createElement('a');link.href=url;link.download='COMP2660-CPU-Simulator.html';
+ const link=document.createElement('a');link.href=url;link.download='SystemBussing-CPU-Simulator.html';
  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 };
 $('next').onclick=()=>{stop();next();};$('prev').onclick=()=>{stop();if(index>0){index--;render();}};$('reset').onclick=()=>{stop();index=0;render();};$('confirm').onclick=()=>reload();$('device').onkeydown=e=>{if(e.key==='Enter')reload();};$('apply').onclick=()=>reload($('program').value);$('demo').onclick=()=>{$('program').value=DEMO;reload(DEMO);};$('language').onclick=()=>{chinese=!chinese;try{localStorage.setItem('cpu-simulator-language',chinese?'zh-Hant':'en');}catch{}render();};$('play').onclick=()=>{if(timer){stop();return;}if(index===trace.length-1)index=0;timer=setInterval(next,Number($('speed').value));render();};$('speed').onchange=()=>{if(timer){clearInterval(timer);timer=setInterval(next,Number($('speed').value));}};document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight')$('next').click();if(e.key==='ArrowLeft')$('prev').click();});render();

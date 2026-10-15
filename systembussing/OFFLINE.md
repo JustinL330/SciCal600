@@ -1,8 +1,8 @@
-# COMP2660 CPU 模擬器：離線版
+# SystemBussing CPU 模擬器：離線版
 
 ## Mac
 
-下載並解壓 COMP2660-CPU-Simulator-Mac.zip，雙擊 CPU Simulator.app。
+下載並解壓 SystemBussing-CPU-Simulator-Mac.zip，雙擊 CPU Simulator.app。
 可將 App 拖到「應用程式」資料夾，日後由 Launchpad 或 Finder 開啟。
 支援 macOS 13 或以上；同一程式支援 Apple Silicon 和 Intel。
 模擬器已內附於 App，不需要網站、伺服器、安裝套件或網路。
@@ -22,7 +22,7 @@ iPhone／iPad 原生 .ipa 的安裝需要 Apple 簽署或 App Store 發佈，因
 
 ## Windows／Linux／其他電腦
 
-直接用 Chrome、Edge、Safari 或 Firefox 開啟 COMP2660-CPU-Simulator-Offline.html。
+直接用 Chrome、Edge、Safari 或 Firefox 開啟 SystemBussing-CPU-Simulator-Offline.html。
 這是獨立離線檔案，所有計算及介面都內含在檔案中。
 .exe 僅適用 Windows；目前依使用裝置提供 Mac 原生 .app。
 
@@ -35,7 +35,7 @@ iPhone／iPad 原生 .ipa 的安裝需要 Apple 簽署或 App Store 發佈，因
 
 ## Acknowledgements
 
-Special thanks to sinx for providing the foundations for the program design, and to Prof. Bell LIU for providing the lecture slides that informed this simulator.
+Project-history thanks to sinx for an early program-design contribution and Prof. Bell LIU for the teaching context. The distributed project does not bundle course slides, photographs, videos, or proprietary media.
 
 ## Cloudflare 網站更新
 

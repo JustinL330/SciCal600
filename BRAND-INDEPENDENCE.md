@@ -12,6 +12,8 @@ New features should be specified from mathematical/technical behavior and public
 
 Do not add third-party logos, product photos, manual scans, firmware, ROMs, proprietary fonts, sound assets, or copied product artwork. Open-source software dependencies remain subject to their own licenses and notices.
 
+The Web build must not describe shipped visuals or wording as recreated from third-party lecture slides, photographs, manuals, or videos. General mathematical and computer-architecture facts may be implemented using original code, diagrams, examples, and explanatory wording. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the dependency record and release checklist.
+
 ## Commercialization note
 
 This policy reduces avoidable product-brand and copied-expression risk, but it is not a legal clearance opinion. Before advertising, app-store distribution, or other commercial use, review the repository name, artwork, dependency licenses, privacy disclosures, store requirements, and applicable trademark/copyright rules for the markets where the app will be offered.
