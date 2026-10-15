@@ -6,6 +6,14 @@
     "backgroundColor": "#071019",
     "allowMixedContent": false
   },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover",
+      "style": "DARK",
+      "hidden": false
+    }
+  },
   "server": {
     "androidScheme": "https"
   }
