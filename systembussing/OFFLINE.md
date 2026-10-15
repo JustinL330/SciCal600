@@ -11,7 +11,7 @@
 
 ## iPhone／iPad
 
-1. 首次連線時，用 Safari 開啟 https://scical600.pages.dev/systembussing/。
+1. 首次連線時，用 Safari 開啟 https://systembussing.scical600.pages.dev/。
 2. 等頁面底部「Offline app／離線 App」顯示「已儲存在此裝置 · 可離線使用」。
 3. 在 Safari 點「分享」→「加入主畫面」→「加入」。若系統顯示「作為網頁 App 開啟」，保持啟用。
 4. 從主畫面開啟 CPU Simulator，確認離線就緒後，可用飛航模式測試。
@@ -40,4 +40,4 @@ Special thanks to sinx for providing the foundations for the program design, and
 ## Cloudflare 網站更新
 
 SystemBussing 現在是 SciCal600 倉庫內的附屬計算器，由倉庫根目錄執行 `npm run deploy`，與 SciCal600 及 LMC 一起發佈。
-正式網址是 `https://scical600.pages.dev/systembussing/`；舊的 `https://systembussing.pages.dev/` 只保留為重新導向入口。
+正式網址是 `https://systembussing.scical600.pages.dev/`；主站路径 `https://scical600.pages.dev/systembussing/` 继续作为备用入口，旧的 `https://systembussing.pages.dev/` 只保留为重新导向入口。

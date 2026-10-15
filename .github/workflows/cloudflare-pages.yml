@@ -55,3 +55,19 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=scical600 --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy LMC branch alias
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/lmc --project-name=scical600 --branch=lmc
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy SystemBussing branch alias
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/systembussing --project-name=scical600 --branch=systembussing
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

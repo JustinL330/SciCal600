@@ -4,4 +4,6 @@ Little Man's Computer is an auxiliary COMP2660 calculator within the SciCal600 r
 
 It provides a 100-mailbox assembler and simulator, instruction and RTL stepping, register state, input/output queues, breakpoints, and an execution trace. The browser page is self-contained in `index.html` and supports English and Traditional Chinese.
 
-Web route: `https://scical600.pages.dev/lmc/`
+Preferred Web domain: `https://lmc.scical600.pages.dev/`
+
+Main-site fallback route: `https://scical600.pages.dev/lmc/`

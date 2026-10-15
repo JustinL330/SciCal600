@@ -30,8 +30,8 @@ Direct Web routes:
 - `/linear-algebra`
 - `/computer-calculator`
 - `/economics-calculator`
-- `/lmc/`
-- `/systembussing/`
+- LMC: `https://lmc.scical600.pages.dev/` (fallback: `/lmc/`)
+- SystemBussing: `https://systembussing.scical600.pages.dev/` (fallback: `/systembussing/`)
 - `/manual`
 - `/about`
 
@@ -106,6 +106,8 @@ Manual deployment:
 ```text
 npm run deploy
 ```
+
+The deployment command publishes the primary `main` site and refreshes the `lmc.scical600.pages.dev` and `systembussing.scical600.pages.dev` branch aliases from the `lmc/` and `systembussing/` directories in this repository's `main` branch.
 
 ## GitHub Actions
 
