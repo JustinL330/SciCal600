@@ -42,9 +42,9 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
       await page.evaluate(view => window.SciCalUI.showView(view), view);
       assert.ok(await page.locator('[data-view-panel="' + view + '"]').isVisible(), view + ' works offline');
     }
-    await device.shell('am start -W -a android.intent.action.VIEW -d scical600://linear-algebra -n io.github.justinfromhkg.scical600/.MainActivity');
-    await page.waitForFunction(() => window.SciCalUI.view === 'linear-algebra');
-    assert.equal(await page.locator('html').getAttribute('data-android-shortcut'), 'linear-algebra', 'launcher shortcut opens its offline workspace');
+    await device.shell('am start -W -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d scical600://probability-calculator');
+    await page.waitForFunction(() => window.SciCalUI.view === 'probability-calculator');
+    assert.equal(await page.locator('html').getAttribute('data-android-deep-link'), 'probability-calculator', 'external deep link opens its offline workspace');
     await page.evaluate(() => window.SciCalUI.showView('calculator'));
     assert.ok(await page.locator('#android-copy-result').isVisible(), 'native result copying is available');
     assert.ok(await page.locator('#android-share-result').isVisible(), 'native result sharing is available');
@@ -75,7 +75,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK, offline workspaces, launcher shortcut, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK, offline workspaces, external deep link, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }

@@ -255,6 +255,31 @@ test("ships localized Android launcher shortcuts for every calculator workspace"
   }
 });
 
+test("registers browsable Android deep links for every offline workspace", () => {
+  const prepareAndroid = read("scripts/prepare-android.mjs");
+  const nativeEntry = read("native/android-entry.js");
+  const androidRoutes = read("native/android-shortcuts.js");
+  const androidSmoke = read("tests/android-smoke.cjs");
+  for (const setting of [
+    "android.intent.action.VIEW",
+    "android.intent.category.DEFAULT",
+    "android.intent.category.BROWSABLE",
+    'android:scheme="scical600"',
+  ]) {
+    assert.match(prepareAndroid, new RegExp(setting.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  for (const route of [
+    "scientific-calculator", "linear-algebra", "statistics-calculator", "probability-calculator",
+    "computer-calculator", "economics-calculator", "manual", "about",
+  ]) {
+    assert.match(androidRoutes, new RegExp(`['\"]${route}['\"]`), `${route} supports Android deep links`);
+  }
+  assert.match(nativeEntry, /App\.addListener\('appUrlOpen'/);
+  assert.match(nativeEntry, /App\.getLaunchUrl\(\)/);
+  assert.match(androidSmoke, /android\.intent\.category\.BROWSABLE/);
+  assert.match(androidSmoke, /data-android-deep-link/);
+});
+
 test("keeps the rolling Android testing Release public, prerelease and non-destructive", () => {
   const workflow = read(".github/workflows/android.yml");
   const androidSmoke = read("tests/android-smoke.cjs");

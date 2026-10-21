@@ -44,6 +44,16 @@ if (!manifest.includes('android.app.shortcuts')) {
                 android:resource="@xml/scical_shortcuts" />
         $2`);
 }
+if (!manifest.includes('android:scheme="scical600"')) {
+  manifest = manifest.replace(/(\s*<\/activity>)/, `
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="scical600" />
+            </intent-filter>
+        $1`);
+}
 writeFileSync(manifestPath, manifest);
 let gradle = readFileSync('android/app/build.gradle', 'utf8');
 if (!gradle.includes('scical.gradle')) gradle += "\napply from: 'scical.gradle'\n";
@@ -94,4 +104,14 @@ for (const requiredSplashSetting of [
 if (!syncedManifest.includes('android:name="android.app.shortcuts"')
     || !syncedManifest.includes('android:resource="@xml/scical_shortcuts"')) {
   throw new Error('Android launcher-shortcut metadata is missing after sync.');
+}
+for (const requiredDeepLinkSetting of [
+  'android:name="android.intent.action.VIEW"',
+  'android:name="android.intent.category.DEFAULT"',
+  'android:name="android.intent.category.BROWSABLE"',
+  'android:scheme="scical600"',
+]) {
+  if (!syncedManifest.includes(requiredDeepLinkSetting)) {
+    throw new Error(`Android deep-link postcondition is missing: ${requiredDeepLinkSetting}`);
+  }
 }
