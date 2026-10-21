@@ -20,6 +20,8 @@ The workflow produces x64 NSIS installer and ZIP packages. They are currently un
 
 The Android workflow builds, signature-checks, installs, launches, and exercises the APK in an Android emulator with networking disabled. Main-branch builds use a development signing key and are explicitly published as prereleases. Production signing remains gated on protected signing secrets and an orchestrated stable release.
 
+An installed Android app also accepts browsable `scical600://` links for every bundled workspace, for example `scical600://scientific-calculator`, `scical600://statistics-calculator`, and `scical600://manual`. These links stay inside the offline app and are validated before navigation.
+
 ## iOS
 
 The workflow generates a Capacitor iOS project and publishes an unsigned iOS Simulator `.app` ZIP. This can be downloaded and used with the iOS Simulator on macOS.
