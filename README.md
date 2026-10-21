@@ -11,7 +11,7 @@ SciCal600 is the primary project. This repository also keeps two standalone auxi
 
 - **Web:** https://scical600.pages.dev/
 - **macOS / Windows / iOS Simulator:** open this repository's **Releases** page and download the client build for the desired commit/version.
-- **Android testing channel:** [Release details](https://github.com/justinfromhkg/SciCal600/releases/tag/android-debug-latest) · [direct APK](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/SciCal600-debug.apk) · [SHA-256](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/SHA256SUMS) · [file size](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/size.txt). This is a public prerelease signed with a development key, not the production-signed stable app.
+- **Android testing channel:** [build details](https://scical600.pages.dev/downloads/android-debug-latest/build-info.txt) · [direct APK](https://scical600.pages.dev/downloads/android-debug-latest/SciCal600-debug.apk) · [SHA-256](https://scical600.pages.dev/downloads/android-debug-latest/SHA256SUMS) · [file size](https://scical600.pages.dev/downloads/android-debug-latest/size.txt). This public mirror contains a development-signed testing build, not the production-signed stable app.
 - Detailed packaging and signing notes: [CLIENTS.md](CLIENTS.md)
 
 Main-branch client builds are automated. macOS and Windows packages are currently unsigned, so their operating systems can show publisher warnings. The iOS artifact is an unsigned Simulator build; a physical iPhone/iPad build requires Apple Developer signing credentials and provisioning.

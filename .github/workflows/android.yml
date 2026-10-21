@@ -175,13 +175,28 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: debug
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://scical600.pages.dev/downloads/android-debug-latest/SciCal600-debug.apk
     permissions:
       contents: write
+      deployments: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: SciCal600-debug
           path: artifacts
+      - name: Verify Cloudflare credentials are configured
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
       - name: Publish rolling verified testing APK to GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
@@ -198,20 +213,21 @@ jobs:
           test -n "$APK_VERSION_NAME"
           printf 'commit=%s\nworkflow_run=%s\nfile=SciCal600-debug.apk\nversion_code=%s\nversion_name=%s\nsize_bytes=%s\nsha256=%s\nsigning=development key (not production)\n' \
             "$GITHUB_SHA" "$GITHUB_RUN_ID" "$APK_VERSION_CODE" "$APK_VERSION_NAME" "$APK_SIZE" "$APK_SHA256" > artifacts/build-info.txt
-          printf -v NOTES '%s\n\n%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s\n%s' \
-            'Rolling, publicly downloadable Android testing build.' \
+          printf -v NOTES '%s\n\n%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s' \
+            'Rolling Android testing build with a public Cloudflare Pages download mirror.' \
             'This APK passed the Web tests, full high-severity dependency audit, Gradle build/lint, signature/package checks, and Android emulator offline checks. It uses a development signing key and is not the production-signed stable app. A different development certificate can require uninstalling an older testing build.' \
             'This mutable channel keeps a fixed download tag; that tag is not the asset source revision. Use the source commit, build-info.txt and immutable per-commit Release below for provenance.' \
             "Source commit: $GITHUB_SHA" \
             "Immutable audit Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$IMMUTABLE_TAG" \
+            'Public APK: https://scical600.pages.dev/downloads/android-debug-latest/SciCal600-debug.apk' \
             "Android version: $APK_VERSION_NAME (code $APK_VERSION_CODE)" \
             "APK size: $APK_SIZE bytes" \
             "SHA-256: $APK_SHA256" \
             "Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
           # Publish the verified build under an immutable per-commit tag before
-          # touching the rolling channel. If the later channel update fails,
-          # this downloadable Release remains available and auditable.
+          # touching the rolling channel. This remains the authenticated audit
+          # source even when repository visibility changes.
           if ! gh release view "$IMMUTABLE_TAG" >/dev/null 2>&1; then
             gh release create "$IMMUTABLE_TAG" --target "$GITHUB_SHA" \
               --prerelease --latest=false \
@@ -224,41 +240,26 @@ jobs:
 
           VERIFY_DIR=$(mktemp -d)
           trap 'rm -rf "$VERIFY_DIR"' EXIT
-          verify_public_release() {
+          verify_release_assets() {
             local tag="$1"
             local destination="$VERIFY_DIR/$tag"
-            local public_base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
-            local verified=false
             mkdir -p "$destination"
-            for attempt in 1 2 3 4 5; do
-              rm -f "$destination/SciCal600-debug.apk" "$destination/SHA256SUMS"
-              if curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
-                  --connect-timeout 15 --max-time 120 \
-                  "$public_base/SciCal600-debug.apk?run=$GITHUB_RUN_ID&attempt=$attempt" \
-                  --output "$destination/SciCal600-debug.apk" \
-                && curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
-                  --connect-timeout 15 --max-time 120 \
-                  "$public_base/SHA256SUMS?run=$GITHUB_RUN_ID&attempt=$attempt" \
-                  --output "$destination/SHA256SUMS" \
-                && test "$(sha256sum "$destination/SciCal600-debug.apk" | awk '{print $1}')" = "$APK_SHA256" \
-                && cmp -s "$destination/SHA256SUMS" artifacts/SHA256SUMS \
-                && test "$(stat -c '%s' "$destination/SciCal600-debug.apk")" = "$APK_SIZE"; then
-                verified=true
-                break
-              fi
-              sleep $((attempt * 3))
-            done
-            test "$verified" = true
+            gh release download "$tag" \
+              --pattern 'SciCal600-debug.apk' --pattern 'SHA256SUMS' \
+              --dir "$destination" --clobber
+            test "$(sha256sum "$destination/SciCal600-debug.apk" | awk '{print $1}')" = "$APK_SHA256"
+            cmp -s "$destination/SHA256SUMS" artifacts/SHA256SUMS
+            test "$(stat -c '%s' "$destination/SciCal600-debug.apk")" = "$APK_SIZE"
           }
 
-          # Confirm the immutable fallback is publicly available and byte-for-byte
-          # identical before changing any rolling-channel metadata or assets.
-          verify_public_release "$IMMUTABLE_TAG"
+          # Confirm the immutable fallback is byte-for-byte identical before
+          # changing any rolling-channel metadata or assets.
+          verify_release_assets "$IMMUTABLE_TAG"
 
           if gh release view "$ROLLING_TAG" >/dev/null 2>&1; then
             # Keep the Release and channel tag in place: never delete/recreate
-            # the public Release. Publish the verified immutable fallback in its
-            # notes before replacing any mutable assets.
+            # it. Publish the verified immutable fallback in its notes before
+            # replacing any mutable assets.
             gh release edit "$ROLLING_TAG" \
               --title 'SciCal600 Android APK · verified testing channel' \
               --notes "$NOTES" --prerelease --latest=false
@@ -274,5 +275,50 @@ jobs:
 
           test "$(gh release view "$ROLLING_TAG" --json isDraft --jq .isDraft)" = false
           test "$(gh release view "$ROLLING_TAG" --json isPrerelease --jq .isPrerelease)" = true
-          verify_public_release "$ROLLING_TAG"
+          verify_release_assets "$ROLLING_TAG"
           gh release view "$ROLLING_TAG" --json tagName,isDraft,isPrerelease,url
+      - name: Stage public Android download mirror
+        run: |
+          set -euo pipefail
+          npm run build
+          MIRROR_DIR=dist/downloads/android-debug-latest
+          mkdir -p "$MIRROR_DIR"
+          cp artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt "$MIRROR_DIR/"
+          (cd "$MIRROR_DIR" && sha256sum --check SHA256SUMS)
+      - name: Publish public Android download mirror
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=scical600 --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify public Android download mirror
+        run: |
+          set -euo pipefail
+          PUBLIC_BASE=https://scical600.pages.dev/downloads/android-debug-latest
+          VERIFY_DIR=$(mktemp -d)
+          trap 'rm -rf "$VERIFY_DIR"' EXIT
+          verified=false
+          for attempt in 1 2 3 4 5; do
+            rm -f "$VERIFY_DIR"/*
+            if curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                --connect-timeout 15 --max-time 120 \
+                "$PUBLIC_BASE/SciCal600-debug.apk?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                --output "$VERIFY_DIR/SciCal600-debug.apk" \
+              && curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                --connect-timeout 15 --max-time 120 \
+                "$PUBLIC_BASE/SHA256SUMS?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                --output "$VERIFY_DIR/SHA256SUMS" \
+              && curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                --connect-timeout 15 --max-time 120 \
+                "$PUBLIC_BASE/build-info.txt?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                --output "$VERIFY_DIR/build-info.txt" \
+              && test "$(sha256sum "$VERIFY_DIR/SciCal600-debug.apk" | awk '{print $1}')" = "$(awk '{print $1; exit}' artifacts/SHA256SUMS)" \
+              && cmp -s "$VERIFY_DIR/SHA256SUMS" artifacts/SHA256SUMS \
+              && cmp -s "$VERIFY_DIR/build-info.txt" artifacts/build-info.txt; then
+              verified=true
+              break
+            fi
+            sleep $((attempt * 3))
+          done
+          test "$verified" = true

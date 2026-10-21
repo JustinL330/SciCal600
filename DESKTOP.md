@@ -9,7 +9,7 @@ allowlist of project links.
 
 ## Downloads
 
-Open [GitHub Releases](https://github.com/justinfromhkg/SciCal600/releases).
+Open [GitHub Releases](https://github.com/JustinL330/SciCal600/releases).
 The multi-platform preview contains:
 
 - Windows x64 one-click installer (`Setup.exe`)

@@ -5,14 +5,14 @@ Android 7.0+ (API 24+) with an up-to-date Android System WebView. Node 22, JDK 2
 
 ## Download / 下载
 
-[Android testing Release / Android 测试版详情](https://github.com/justinfromhkg/SciCal600/releases/tag/android-debug-latest)
+[Android build details / Android 测试版详情](https://scical600.pages.dev/downloads/android-debug-latest/build-info.txt)
 
-[Direct APK / 直接下载 APK](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/SciCal600-debug.apk) · [SHA-256](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/SHA256SUMS) · [file size / 文件大小](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-latest/size.txt)
+[Direct APK / 直接下载 APK](https://scical600.pages.dev/downloads/android-debug-latest/SciCal600-debug.apk) · [SHA-256](https://scical600.pages.dev/downloads/android-debug-latest/SHA256SUMS) · [file size / 文件大小](https://scical600.pages.dev/downloads/android-debug-latest/size.txt)
 
-[All Android and multi-platform Releases / 所有 Release](https://github.com/justinfromhkg/SciCal600/releases)
+[All Android and multi-platform Releases / 所有 Release](https://github.com/JustinL330/SciCal600/releases)
 
-The rolling `android-debug-latest` channel is a public **prerelease**, not the
-repository's production `Latest` release. It contains an installable,
+The rolling `android-debug-latest` channel has a public download mirror and an
+auditable GitHub **prerelease**. It contains an installable,
 development-signed APK and publishes the source commit, exact file size and
 SHA-256 alongside the APK. It is tested
 in an Android 15 emulator but is not a production-signed Play Store build.
@@ -69,6 +69,6 @@ CI 输出签名、包名、大小、SHA-256，并实际安装和离线启动；�
 
 ## Verified delivery / 已验证交付
 
-[Open the rolling Android testing Release / 打开 Android 测试版](https://github.com/justinfromhkg/SciCal600/releases/tag/android-debug-latest)
+[Open the rolling Android testing Release / 打开 Android 测试版](https://github.com/JustinL330/SciCal600/releases/tag/android-debug-latest)
 
 [Build, installation and SHA-256 report / 构建、安装与校验报告](ANDROID-PROGRESS.md)
