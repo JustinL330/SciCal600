@@ -259,6 +259,7 @@ test("ships localized Android launcher shortcuts for every calculator workspace"
 test("registers browsable Android deep links for every offline workspace", () => {
   const prepareAndroid = read("scripts/prepare-android.mjs");
   const nativeEntry = read("native/android-entry.js");
+  const androidResume = read("native/android-resume.js");
   const androidRoutes = read("native/android-shortcuts.js");
   const androidSmoke = read("tests/android-smoke.cjs");
   for (const setting of [
@@ -275,10 +276,27 @@ test("registers browsable Android deep links for every offline workspace", () =>
   ]) {
     assert.match(androidRoutes, new RegExp(`['\"]${route}['\"]`), `${route} supports Android deep links`);
   }
-  assert.match(nativeEntry, /App\.addListener\('appUrlOpen'/);
-  assert.match(nativeEntry, /App\.getLaunchUrl\(\)/);
+  assert.match(nativeEntry, /installAndroidViewResume/);
+  assert.match(androidResume, /app\.addListener\('appUrlOpen'/);
+  assert.match(androidResume, /app\.getLaunchUrl\(\)/);
   assert.match(androidSmoke, /android\.intent\.category\.BROWSABLE/);
   assert.match(androidSmoke, /data-android-deep-link/);
+});
+
+test("resumes the last Android workspace without changing web or desktop startup", () => {
+  const nativeEntry = read("native/android-entry.js");
+  const androidResume = read("native/android-resume.js");
+  const siteUi = read("site-ui.js");
+  const androidSmoke = read("tests/android-smoke.cjs");
+  const clients = read("CLIENTS.md");
+  assert.match(nativeEntry, /installAndroidViewResume/);
+  assert.match(androidResume, /scical600\.android\.lastView/);
+  assert.match(androidResume, /isAndroidView/);
+  assert.match(androidResume, /ui\.showView\(savedView, false\)/);
+  assert.match(siteUi, /scical600:viewchange/);
+  assert.match(androidSmoke, /androidResume === 'ready'/);
+  assert.match(androidSmoke, /scical600\.android\.lastView/);
+  assert.match(clients, /returns to the last workspace used/);
 });
 
 test("keeps the Android testing Release auditable and its download mirror public", () => {

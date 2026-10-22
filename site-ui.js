@@ -550,6 +550,7 @@
     const targetPath = pathForView(nextView);
     if (addHistory && location.pathname !== targetPath) history.pushState({ view: nextView }, "", targetPath);
     if (nextView === "calculator") requestAnimationFrame(updateScale);
+    document.dispatchEvent(new CustomEvent("scical600:viewchange", { detail: { view: nextView } }));
   }
 
   function pathForView(view) {

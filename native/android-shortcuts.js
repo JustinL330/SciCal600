@@ -11,6 +11,11 @@ const androidRouteViews = Object.freeze({
   manual: 'manual',
   about: 'about',
 });
+const androidViews = new Set(Object.values(androidRouteViews));
+
+export function isAndroidView(value) {
+  return typeof value === 'string' && androidViews.has(value);
+}
 
 export function viewFromAndroidUrl(value) {
   if (typeof value !== 'string' || !value) return null;

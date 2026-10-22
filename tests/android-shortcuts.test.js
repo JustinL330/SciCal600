@@ -2,7 +2,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 test('maps only valid SciCal600 Android URLs to supported offline views', async () => {
-  const { viewFromAndroidUrl } = await import('../native/android-shortcuts.js');
+  const { isAndroidView, viewFromAndroidUrl } = await import('../native/android-shortcuts.js');
+  assert.equal(isAndroidView('calculator'), true);
+  assert.equal(isAndroidView('economics-calculator'), true);
+  assert.equal(isAndroidView('https://example.com'), false);
   assert.equal(viewFromAndroidUrl('scical600://scientific-calculator'), 'calculator');
   assert.equal(viewFromAndroidUrl('scical600://calculator'), 'calculator');
   assert.equal(viewFromAndroidUrl('scical600://linear-algebra'), 'linear-algebra');
