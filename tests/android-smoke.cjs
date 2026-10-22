@@ -53,6 +53,10 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     await page.waitForFunction(() => window.SciCalUI.view === 'probability-calculator');
     assert.equal(await page.locator('html').getAttribute('data-android-deep-link'), 'probability-calculator', 'external deep link opens its offline workspace');
     assert.equal(await page.evaluate(() => localStorage.getItem('scical600.android.lastView')), 'probability-calculator', 'Android remembers the last workspace');
+    // Backgrounding gives Chromium the same storage-flush opportunity as a
+    // normal user exit before force-stop creates a deterministic cold launch.
+    await device.shell('input keyevent KEYCODE_HOME');
+    await page.waitForTimeout(1_000);
     await device.shell('am force-stop io.github.justinfromhkg.scical600');
     await device.shell('am start -W -n io.github.justinfromhkg.scical600/.MainActivity');
     page = await attachStableAppPage(device);
