@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const { _android: android } = require('playwright');
+const { version: packageVersion } = require('../package.json');
 const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview-ready.cjs');
 (async () => {
   const [device] = await android.devices();
@@ -24,6 +25,11 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     });
     assert.ok(page, 'offline WebView page exists');
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
+    await page.waitForFunction(() => document.documentElement.dataset.androidAppInfo === 'ready');
+    const installedVersion = await page.locator('html').getAttribute('data-android-app-version');
+    const installedBuild = await page.locator('html').getAttribute('data-android-app-build');
+    assert.equal(installedVersion, `${packageVersion}-dev.${installedBuild}`, 'installed version and build are exposed in the app');
+    assert.equal((await page.locator('[data-android-version-value]').textContent()).trim(), `${installedVersion} (${installedBuild})`, 'About shows the installed Android version');
     await page.waitForFunction(() => document.documentElement.dataset.androidSystemBars === 'ready');
     const initialTheme = await page.locator('html').getAttribute('data-theme');
     const initialSystemBarsStyle = initialTheme === 'bright' ? 'LIGHT' : 'DARK';
@@ -75,7 +81,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK, offline workspaces, external deep link, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK and version, offline workspaces, external deep link, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }

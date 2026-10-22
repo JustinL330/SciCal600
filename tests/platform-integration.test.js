@@ -99,7 +99,7 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   assert.doesNotMatch(html, /fonts\.googleapis\.com|fonts\.gstatic\.com/, "native clients must not depend on remote font stylesheets");
   for (const key of [
     "nativeAvailabilityEyebrow", "nativeAvailabilityTitle", "nativeAvailabilityIntro",
-    "nativeAndroidDescription", "nativeWindowsDescription", "nativeMacosDescription", "nativeIosDescription",
+    "nativeAndroidDescription", "nativeWindowsDescription", "nativeMacosDescription", "nativeIosDescription", "installedAndroidVersion",
   ]) {
     assert.match(html, new RegExp(`data-i18n="${key}"`), `${key} is declared in static HTML`);
   }
@@ -112,7 +112,7 @@ test("localizes the Android download and native availability content in all twel
   const requiredKeys = [
     "androidDownload", "androidDownloadAria", "androidReleaseDetails", "androidChecksum", "androidFileSize",
     "androidDownloadDisclosure", "nativeAvailabilityEyebrow", "nativeAvailabilityTitle", "nativeAvailabilityIntro",
-    "nativeAndroidDescription", "nativeWindowsDescription", "nativeMacosDescription", "nativeIosDescription",
+    "nativeAndroidDescription", "nativeWindowsDescription", "nativeMacosDescription", "nativeIosDescription", "installedAndroidVersion",
   ];
   for (const [language, dictionary] of Object.entries(locales)) {
     for (const key of requiredKeys) {
@@ -355,6 +355,21 @@ test("adds native Android haptic feedback without changing the web calculator", 
   assert.match(haptics, /event\.isPrimary === false/);
   assert.match(androidSmoke, /data-android-haptics/);
   assert.doesNotMatch(read("index.html"), /@capacitor\/haptics/, "web HTML stays independent of the native plugin");
+});
+
+test("shows the exact installed Android version only when native package metadata is available", () => {
+  const html = read("index.html");
+  const nativeEntry = read("native/android-entry.js");
+  const appInfo = read("native/app-info.js");
+  const locales = read("additional-locales.js");
+  assert.match(html, /id="android-installed-version"[^>]*hidden/);
+  assert.match(html, /data-i18n="installedAndroidVersion"/);
+  assert.match(nativeEntry, /installAndroidAppInfo/);
+  assert.match(nativeEntry, /App\.getInfo\(\)/);
+  assert.match(appInfo, /value\.textContent = formatted/);
+  assert.match(appInfo, /dataset\.androidAppInfo = 'ready'/);
+  assert.equal((locales.match(/installedAndroidVersion:/g) || []).length, 12, "all twelve languages label the installed version");
+  assert.match(read("tests/android-smoke.cjs"), /data-android-app-version/);
 });
 
 test("shares the current result through Android while remaining hidden on the web", () => {
