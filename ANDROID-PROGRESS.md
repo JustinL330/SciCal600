@@ -1,10 +1,10 @@
 # Android delivery checkpoint — audited
 
-The original Android implementation was merged through [PR #4](https://github.com/justinfromhkg/SciCal600/pull/4). This file records the last fully verified baseline before the multi-platform v0.4.0 upgrade. New verified testing builds use the public [rolling Android prerelease](https://github.com/justinfromhkg/SciCal600/releases/tag/android-debug-latest); the immutable baseline below remains as historical evidence.
+The original Android implementation was merged through [PR #4](https://github.com/JustinL330/SciCal600/pull/4). This file records the last fully verified baseline before the multi-platform v0.4.0 upgrade. New verified testing builds use the public [rolling Android download mirror](https://scical600.pages.dev/downloads/android-debug-latest/SciCal600-debug.apk); the immutable baseline below remains as historical evidence.
 
 ## Delivered APK
 
-[Download the verified baseline APK](https://github.com/justinfromhkg/SciCal600/releases/download/android-debug-45c4e235c624/SciCal600-debug.apk)
+[Download the verified baseline APK](https://github.com/JustinL330/SciCal600/releases/download/android-debug-45c4e235c624/SciCal600-debug.apk)
 
 - Build path: `android/app/build/outputs/apk/debug/app-debug.apk`
 - Delivery path: `artifacts/SciCal600-debug.apk`
@@ -15,7 +15,7 @@ The original Android implementation was merged through [PR #4](https://github.co
 
 ## Actual verification
 
-[Successful cloud run](https://github.com/justinfromhkg/SciCal600/actions/runs/35054864407)
+[Successful cloud run](https://github.com/JustinL330/SciCal600/actions/runs/35054864407)
 
 46 unit/integration tests passed; Web build and the existing mobile browser regression suite passed. Two consecutive Android syncs passed. Gradle assembleDebug and lintDebug passed. SDK apksigner verified the APK; aapt verified the package identity.
 

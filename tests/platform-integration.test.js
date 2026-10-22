@@ -91,8 +91,9 @@ test("wires formal routes, static assets and mobile-friendly matrix inputs", () 
   assert.match(html, /<option value="th">🇹🇭 ไทย<\/option>/);
   assert.match(html, /<option value="yue-Hant-HK">🇭🇰 粵語<\/option>/);
   assert.match(html, /data-i18n="aboutTitle">Maths made simple<\/h1>/);
-  assert.match(html, /releases\/download\/android-debug-latest\/SciCal600-debug\.apk/);
-  assert.match(html, /releases\/tag\/android-debug-latest/);
+  assert.match(html, /scical600\.pages\.dev\/downloads\/android-debug-latest\/SciCal600-debug\.apk/);
+  assert.match(html, /scical600\.pages\.dev\/downloads\/android-debug-latest\/build-info\.txt/);
+  assert.doesNotMatch(html, /github\.com\/justinfromhkg\/SciCal600/);
   assert.match(html, /data-i18n="androidDownload">Android APK · Verified testing build<\/span>/);
   assert.match(html, /data-i18n-aria="androidDownloadAria"/);
   assert.doesNotMatch(html, /fonts\.googleapis\.com|fonts\.gstatic\.com/, "native clients must not depend on remote font stylesheets");
@@ -280,8 +281,10 @@ test("registers browsable Android deep links for every offline workspace", () =>
   assert.match(androidSmoke, /data-android-deep-link/);
 });
 
-test("keeps the rolling Android testing Release public, prerelease and non-destructive", () => {
+test("keeps the Android testing Release auditable and its download mirror public", () => {
   const workflow = read(".github/workflows/android.yml");
+  const cloudflareWorkflow = read(".github/workflows/cloudflare-pages.yml");
+  const html = read("index.html");
   const androidSmoke = read("tests/android-smoke.cjs");
   const clientWorkflows = [
     read(".github/workflows/clients.yml"),
@@ -313,14 +316,21 @@ test("keeps the rolling Android testing Release public, prerelease and non-destr
   assert.match(workflow, /IMMUTABLE_TAG="android-debug-\$\{GITHUB_SHA:0:12\}"/);
   assert.match(workflow, /gh release (?:create|edit) "\$ROLLING_TAG"[\s\S]*--prerelease --latest=false/);
   assert.match(workflow, /gh release upload "\$ROLLING_TAG"[\s\S]*--clobber/);
+  assert.match(workflow, /gh release download "\$tag"/);
+  assert.match(workflow, /verify_release_assets "\$ROLLING_TAG"/);
+  assert.match(workflow, /cloudflare\/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0/);
+  assert.match(workflow, /PUBLIC_BASE=https:\/\/scical600\.pages\.dev\/downloads\/android-debug-latest/);
   assert.match(workflow, /curl --fail --location[\s\S]*SciCal600-debug\.apk/);
   assert.match(workflow, /--connect-timeout 15 --max-time 120/);
   assert.match(workflow, /sha256sum "\$destination\/SciCal600-debug\.apk"[\s\S]*= "\$APK_SHA256"/);
   assert.match(workflow, /cmp -s "\$destination\/SHA256SUMS" artifacts\/SHA256SUMS/);
   assert.ok(
-    workflow.indexOf('verify_public_release "$IMMUTABLE_TAG"') < workflow.indexOf('gh release upload "$ROLLING_TAG"'),
-    "the immutable public fallback is verified before rolling assets are replaced",
+    workflow.indexOf('verify_release_assets "$IMMUTABLE_TAG"') < workflow.indexOf('gh release upload "$ROLLING_TAG"'),
+    "the immutable audit fallback is verified before rolling assets are replaced",
   );
+  assert.match(cloudflareWorkflow, /Preserve latest verified Android download mirror/);
+  assert.match(cloudflareWorkflow, /sha256sum --check SHA256SUMS/);
+  assert.match(html, /https:\/\/scical600\.pages\.dev\/downloads\/android-debug-latest\/SciCal600-debug\.apk/);
   assert.match(workflow, /fixed download tag; that tag is not the asset source revision/);
   assert.match(workflow, /Immutable audit Release:/);
   assert.doesNotMatch(workflow, /gh release delete "\$(?:ROLLING_TAG|LATEST_TAG)"/);

@@ -48,6 +48,29 @@ jobs:
       - name: Build static site
         run: npm run build
 
+      - name: Preserve latest verified Android download mirror
+        run: |
+          set -euo pipefail
+          PUBLIC_BASE=https://scical600.pages.dev/downloads/android-debug-latest
+          SOURCE_DIR=$(mktemp -d)
+          trap 'rm -rf "$SOURCE_DIR"' EXIT
+          complete=true
+          for file in SciCal600-debug.apk SHA256SUMS size.txt build-info.txt; do
+            if ! curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                --connect-timeout 15 --max-time 120 \
+                "$PUBLIC_BASE/$file" --output "$SOURCE_DIR/$file"; then
+              complete=false
+              break
+            fi
+          done
+          if [[ "$complete" == true ]] && (cd "$SOURCE_DIR" && sha256sum --check SHA256SUMS); then
+            MIRROR_DIR=dist/downloads/android-debug-latest
+            mkdir -p "$MIRROR_DIR"
+            cp "$SOURCE_DIR"/* "$MIRROR_DIR/"
+          else
+            echo '::notice::No existing verified Android mirror was available to preserve.'
+          fi
+
       - name: Deploy production to Cloudflare Pages
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:

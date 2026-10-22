@@ -20,7 +20,7 @@ only after all platform jobs succeed, including Android emulator installation,
 the iOS Simulator launch, unit/browser tests, native lint, identity checks and
 the dependency vulnerability gate.
 
-[Open all downloadable Releases](https://github.com/justinfromhkg/SciCal600/releases)
+[Open all downloadable Releases](https://github.com/JustinL330/SciCal600/releases)
 
 The Release includes one combined `SHA256SUMS.txt` and an explicit signing
 notice. An unsigned iOS IPA cannot be installed on a normal iPhone or iPad;
