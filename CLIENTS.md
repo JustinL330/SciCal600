@@ -22,6 +22,8 @@ The Android workflow builds, signature-checks, installs, launches, and exercises
 
 An installed Android app also accepts browsable `scical600://` links for every bundled workspace, for example `scical600://scientific-calculator`, `scical600://statistics-calculator`, and `scical600://manual`. These links stay inside the offline app and are validated before navigation.
 
+When Android opens the app normally, it returns to the last workspace used. A launcher shortcut or valid `scical600://` link takes priority for that launch.
+
 ## iOS
 
 The workflow generates a Capacitor iOS project and publishes an unsigned iOS Simulator `.app` ZIP. This can be downloaded and used with the iOS Simulator on macOS.

@@ -18,13 +18,14 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
         console.warn(`Android focus attempt ${attempt} found a non-app window; restoring SciCal600: ${focus || 'unknown'}`);
       },
     });
-    const page = await attachStableAppPage(device, {
+    let page = await attachStableAppPage(device, {
       onRetry: ({ attempt, error, pid, processIds }) => {
         console.warn(`Android startup WebView attempt ${attempt} (WebView pid ${pid || 'unknown'}, app pid ${processIds}) closed; reconnecting: ${error.message}`);
       },
     });
     assert.ok(page, 'offline WebView page exists');
     assert.equal(await page.locator('html').getAttribute('data-android-back-ready'), 'true', 'native Back listener registered');
+    await page.waitForFunction(() => document.documentElement.dataset.androidResume === 'ready');
     await page.waitForFunction(() => document.documentElement.dataset.androidAppInfo === 'ready');
     const installedVersion = await page.locator('html').getAttribute('data-android-app-version');
     const installedBuild = await page.locator('html').getAttribute('data-android-app-build');
@@ -51,6 +52,12 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     await device.shell('am start -W -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d scical600://probability-calculator');
     await page.waitForFunction(() => window.SciCalUI.view === 'probability-calculator');
     assert.equal(await page.locator('html').getAttribute('data-android-deep-link'), 'probability-calculator', 'external deep link opens its offline workspace');
+    assert.equal(await page.evaluate(() => localStorage.getItem('scical600.android.lastView')), 'probability-calculator', 'Android remembers the last workspace');
+    await device.shell('am force-stop io.github.justinfromhkg.scical600');
+    await device.shell('am start -W -n io.github.justinfromhkg.scical600/.MainActivity');
+    page = await attachStableAppPage(device);
+    await page.waitForFunction(() => document.documentElement.dataset.androidResume === 'ready');
+    assert.equal(await page.evaluate(() => window.SciCalUI.view), 'probability-calculator', 'normal Android relaunch restores the last workspace');
     await page.evaluate(() => window.SciCalUI.showView('calculator'));
     assert.ok(await page.locator('#android-copy-result').isVisible(), 'native result copying is available');
     assert.ok(await page.locator('#android-share-result').isVisible(), 'native result sharing is available');
@@ -81,7 +88,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK and version, offline workspaces, external deep link, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK and version, offline workspaces, remembered workspace relaunch, external deep link, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }
