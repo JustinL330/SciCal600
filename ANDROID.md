@@ -16,6 +16,8 @@ auditable GitHub **prerelease**. It contains an installable,
 development-signed APK and publishes the source commit, exact file size and
 SHA-256 alongside the APK. It is tested
 in an Android 15 emulator but is not a production-signed Play Store build.
+The installed app shows its exact version and build number in About, making it
+easy to compare an installation with the published build details.
 The fixed rolling tag is a stable download address, not the source revision;
 the Release notes and `build-info.txt` link the exact commit and its immutable
 per-commit prerelease.

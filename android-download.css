@@ -4,5 +4,8 @@
 .android-release-details { color: inherit; font: 600 13px system-ui; text-underline-offset: 3px; }
 .android-download-meta { max-width: 72ch; margin: 0; color: var(--muted, #52606d); font: 500 12px/1.5 system-ui; }
 .android-download-meta a { color: inherit; font-weight: 700; text-underline-offset: 3px; }
+.android-installed-version { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 10px 0 0; padding: 7px 10px; border: 1px solid rgba(128, 160, 176, .28); border-radius: 10px; font: 600 12px/1.4 system-ui; }
+.android-installed-version[hidden] { display: none; }
+.android-installed-version strong { font: 750 12px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
 html[data-native="android"] .android-download,
 html[data-native="ios"] .android-download { display: none; }
