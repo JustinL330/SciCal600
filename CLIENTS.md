@@ -24,6 +24,8 @@ An installed Android app also accepts browsable `scical600://` links for every b
 
 When Android opens the app normally, it returns to the last workspace used. A launcher shortcut or valid `scical600://` link takes priority for that launch.
 
+External Web links open in an Android Custom Tab instead of replacing the offline calculator. The verified testing-APK button remains available inside the Android app so users can reach the current download channel while their workspace stays intact.
+
 ## iOS
 
 The workflow generates a Capacitor iOS project and publishes an unsigned iOS Simulator `.app` ZIP. This can be downloaded and used with the iOS Simulator on macOS.
