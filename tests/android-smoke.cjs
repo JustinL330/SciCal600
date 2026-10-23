@@ -31,6 +31,8 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     const installedBuild = await page.locator('html').getAttribute('data-android-app-build');
     assert.equal(installedVersion, `${packageVersion}-dev.${installedBuild}`, 'installed version and build are exposed in the app');
     assert.equal((await page.locator('[data-android-version-value]').textContent()).trim(), `${installedVersion} (${installedBuild})`, 'About shows the installed Android version');
+    assert.equal(await page.locator('html').getAttribute('data-android-external-links'), 'ready', 'native external-link browser registered');
+    assert.ok(await page.locator('.android-download').isVisible(), 'latest verified APK remains reachable inside Android');
     await page.waitForFunction(() => document.documentElement.dataset.androidSystemBars === 'ready');
     const initialTheme = await page.locator('html').getAttribute('data-theme');
     const initialSystemBarsStyle = initialTheme === 'bright' ? 'LIGHT' : 'DARK';
@@ -92,7 +94,7 @@ const { attachStableAppPage, ensureAppWindowFocus } = require('./android-webview
     }
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal document overflow');
     await page.screenshot({ path: 'artifacts/android-offline.png' });
-    console.log('ANDROID_SMOKE_OK: installed APK and version, offline workspaces, remembered workspace relaunch, external deep link, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
+    console.log('ANDROID_SMOKE_OK: installed APK and version, in-app APK channel and external-link browser, offline workspaces, remembered workspace relaunch, external deep link, theme-aware native system bars, haptics, copy and sharing, 1+1, six native Back events, viewport');
   } finally {
     await device.close();
   }

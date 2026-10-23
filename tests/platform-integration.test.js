@@ -311,6 +311,7 @@ test("keeps the Android testing Release auditable and its download mirror public
   const iosWorkflow = read(".github/workflows/ios.yml");
   const manifest = JSON.parse(read("package.json"));
   assert.equal(manifest.dependencies["@capacitor/android"], "8.5.2");
+  assert.equal(manifest.dependencies["@capacitor/browser"], "8.0.5");
   assert.equal(manifest.dependencies["@capacitor/clipboard"], "8.0.1");
   assert.equal(manifest.dependencies["@capacitor/haptics"], "8.0.2");
   assert.equal(manifest.dependencies["@capacitor/share"], "8.0.3");
@@ -388,6 +389,23 @@ test("shows the exact installed Android version only when native package metadat
   assert.match(appInfo, /dataset\.androidAppInfo = 'ready'/);
   assert.equal((locales.match(/installedAndroidVersion:/g) || []).length, 12, "all twelve languages label the installed version");
   assert.match(read("tests/android-smoke.cjs"), /data-android-app-version/);
+});
+
+test("opens external Android links without replacing the offline calculator", () => {
+  const css = read("android-download.css");
+  const nativeEntry = read("native/android-entry.js");
+  const externalLinks = read("native/external-links.js");
+  const androidSmoke = read("tests/android-smoke.cjs");
+  assert.match(nativeEntry, /@capacitor\/browser/);
+  assert.match(nativeEntry, /installExternalLinkBrowser/);
+  assert.match(nativeEntry, /Browser\.open/);
+  assert.match(externalLinks, /\['http:', 'https:'\]/);
+  assert.match(externalLinks, /url\.origin === location\.origin/);
+  assert.match(externalLinks, /url\.username \|\| url\.password/);
+  assert.doesNotMatch(css, /data-native="android"[^\n]*\.android-download/);
+  assert.match(css, /data-native="ios"[^\n]*\.android-download/);
+  assert.match(androidSmoke, /data-android-external-links/);
+  assert.match(androidSmoke, /latest verified APK remains reachable inside Android/);
 });
 
 test("shares the current result through Android while remaining hidden on the web", () => {

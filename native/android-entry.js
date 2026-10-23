@@ -1,5 +1,6 @@
 import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { Clipboard } from '@capacitor/clipboard';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Share } from '@capacitor/share';
@@ -7,6 +8,7 @@ import { handleBack } from './back.js';
 import { installAndroidAppInfo } from './app-info.js';
 import { installAndroidViewResume } from './android-resume.js';
 import { installResultCopy } from './copy-result.js';
+import { installExternalLinkBrowser } from './external-links.js';
 import { installButtonHaptics } from './haptics.js';
 import { installResultShare } from './share-result.js';
 import { installAndroidSystemBars } from './system-bars.js';
@@ -34,6 +36,12 @@ if (Capacitor.isNativePlatform()) {
     canShare: () => Share.canShare(),
     share: (options) => Share.share(options),
     translate: (key) => window.SciCalUI?.translate(key) || key,
+  });
+  installExternalLinkBrowser({
+    document,
+    location: window.location,
+    open: (options) => Browser.open(options),
+    fallbackOpen: (url) => window.open(url, '_blank', 'noopener'),
   });
   installAndroidViewResume({
     document,
