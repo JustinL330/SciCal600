@@ -8,7 +8,7 @@ const capacitorIos = resolve("node_modules", "@capacitor", "ios");
 const run = (...args) => execFileSync(process.execPath, [capacitorCli, ...args], { stdio: "inherit" });
 
 if (!existsSync(capacitorIos)) {
-  throw new Error("@capacitor/ios is required. Run npm ci to install the locked 8.5.2 platform before ios:sync.");
+  throw new Error("@capacitor/ios is required. Run npm ci to install the locked 8.5.3 platform before ios:sync.");
 }
 if (!existsSync("ios")) run("add", "ios");
 

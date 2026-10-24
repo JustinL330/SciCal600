@@ -310,12 +310,16 @@ test("keeps the Android testing Release auditable and its download mirror public
   ].join("\n");
   const iosWorkflow = read(".github/workflows/ios.yml");
   const manifest = JSON.parse(read("package.json"));
-  assert.equal(manifest.dependencies["@capacitor/android"], "8.5.2");
+  assert.equal(manifest.dependencies["@capacitor/android"], "8.5.3");
+  assert.equal(manifest.dependencies["@capacitor/app"], "8.1.2");
   assert.equal(manifest.dependencies["@capacitor/browser"], "8.0.5");
   assert.equal(manifest.dependencies["@capacitor/clipboard"], "8.0.1");
+  assert.equal(manifest.dependencies["@capacitor/core"], "8.5.3");
   assert.equal(manifest.dependencies["@capacitor/haptics"], "8.0.2");
   assert.equal(manifest.dependencies["@capacitor/share"], "8.0.3");
-  assert.equal(manifest.devDependencies["@capacitor/ios"], "8.5.2");
+  assert.equal(manifest.devDependencies["@capacitor/cli"], "8.5.3");
+  assert.equal(manifest.devDependencies["@capacitor/ios"], "8.5.3");
+  assert.equal(manifest.devDependencies.electron, "44.9.3");
   assert.equal(manifest.devDependencies["electron-builder"], "26.17.0");
   assert.equal(manifest.engines.node, ">=22.12.0");
   assert.match(workflow, /npm audit --audit-level=high/);
