@@ -10,7 +10,7 @@ Open the repository **Releases** page and choose the release matching the commit
 
 ## macOS
 
-The workflow packages Intel and Apple Silicon builds with Electron 44.3.0 using `electron-builder` 26.17.0. The generated DMG/ZIP packages are currently unsigned, so macOS Gatekeeper can show an unidentified-developer warning until Apple signing/notarization credentials are configured.
+The workflow packages Intel and Apple Silicon builds with Electron 44.9.3 using `electron-builder` 26.17.0. The generated DMG/ZIP packages are currently unsigned, so macOS Gatekeeper can show an unidentified-developer warning until Apple signing/notarization credentials are configured.
 
 ## Windows
 
@@ -19,6 +19,8 @@ The workflow produces x64 NSIS installer and ZIP packages. They are currently un
 ## Android
 
 The Android workflow builds, signature-checks, installs, launches, and exercises the APK in an Android emulator with networking disabled. Main-branch builds use a development signing key and are explicitly published as prereleases. Production signing remains gated on protected signing secrets and an orchestrated stable release.
+
+Each testing Release publishes its exact signing-certificate fingerprint. When the dedicated testing secrets are absent, CI uses an isolated ephemeral key and Android can require uninstalling a differently signed testing build before installing the next one. To make testing-channel builds updateable in place, configure all five repository secrets together: `ANDROID_TESTING_KEYSTORE_BASE64`, `ANDROID_TESTING_KEYSTORE_PASSWORD`, `ANDROID_TESTING_KEY_ALIAS`, `ANDROID_TESTING_KEY_PASSWORD`, and `ANDROID_TESTING_CERT_SHA256`. Keep an offline recovery copy of that testing keystore; never commit it or reuse the production signing key. Partial configuration fails closed, and CI verifies the built APK against the expected certificate fingerprint before publishing it.
 
 An installed Android app also accepts browsable `scical600://` links for every bundled workspace, for example `scical600://scientific-calculator`, `scical600://statistics-calculator`, and `scical600://manual`. These links stay inside the offline app and are validated before navigation.
 
