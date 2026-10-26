@@ -337,6 +337,9 @@ test("keeps the Android testing Release auditable and its download mirror public
   assert.match(workflow, /Configure all five ANDROID_TESTING_\* secrets together/);
   assert.match(workflow, /apksigner" verify --verbose --print-certs artifacts\/SciCal600-debug\.apk/);
   assert.match(workflow, /\/certificate SHA-256 digest:\//);
+  assert.match(workflow, /print toupper\(\$NF\)/);
+  assert.match(workflow, /print tolower\(\$NF\)/);
+  assert.doesNotMatch(workflow, /print (?:toupper|tolower)\(\$2\)/);
   assert.doesNotMatch(workflow, /Signer #1 certificate SHA-256 digest/);
   assert.match(workflow, /signing_cert_sha256=%s/);
   assert.match(workflow, /artifacts\/signing-certificate\.txt/);
