@@ -45,21 +45,70 @@ jobs:
         run: |
           npm run android:sync
           npm run android:sync
+      - name: Prepare isolated Android testing signer
+        id: testing_signing
+        env:
+          TEST_KEYSTORE_BASE64: ${{ secrets.ANDROID_TESTING_KEYSTORE_BASE64 }}
+          TEST_STORE_PASSWORD: ${{ secrets.ANDROID_TESTING_KEYSTORE_PASSWORD }}
+          TEST_KEY_ALIAS: ${{ secrets.ANDROID_TESTING_KEY_ALIAS }}
+          TEST_KEY_PASSWORD: ${{ secrets.ANDROID_TESTING_KEY_PASSWORD }}
+          TEST_CERT_SHA256: ${{ secrets.ANDROID_TESTING_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          KEYSTORE="$RUNNER_TEMP/scical600-testing.keystore"
+          present=0
+          for value in "$TEST_KEYSTORE_BASE64" "$TEST_STORE_PASSWORD" "$TEST_KEY_ALIAS" "$TEST_KEY_PASSWORD" "$TEST_CERT_SHA256"; do
+            [[ -n "$value" ]] && present=$((present + 1))
+          done
+          if [[ "$present" -eq 5 ]]; then
+            printf '%s' "$TEST_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE"
+            keytool -list -keystore "$KEYSTORE" -storepass "$TEST_STORE_PASSWORD" -alias "$TEST_KEY_ALIAS" >/dev/null
+            echo 'mode=repository-protected' >> "$GITHUB_OUTPUT"
+          elif [[ "$present" -eq 0 ]]; then
+            keytool -genkeypair -noprompt \
+              -keystore "$KEYSTORE" -storepass android \
+              -alias scical-testing -keypass android \
+              -keyalg RSA -keysize 3072 -validity 3650 \
+              -dname 'CN=SciCal600 Ephemeral CI Testing,OU=Automated Testing,O=SciCal600,C=HK'
+            echo 'mode=ephemeral-ci' >> "$GITHUB_OUTPUT"
+            echo 'store_password=android' >> "$GITHUB_OUTPUT"
+            echo 'key_alias=scical-testing' >> "$GITHUB_OUTPUT"
+            echo 'key_password=android' >> "$GITHUB_OUTPUT"
+          else
+            echo '::error::Configure all five ANDROID_TESTING_* secrets together, or leave all five unset.'
+            exit 1
+          fi
+          echo "keystore=$KEYSTORE" >> "$GITHUB_OUTPUT"
       - name: Gradle debug build and lint
         working-directory: android
         env:
           # Every CI build is upgrade-ordered and identifiable in Android's app
           # details. Local builds keep the package.json version and code 1.
           SCICAL_VERSION_CODE: ${{ github.run_number }}
+          SCICAL_TEST_KEYSTORE: ${{ steps.testing_signing.outputs.keystore }}
+          SCICAL_TEST_STORE_PASSWORD: ${{ secrets.ANDROID_TESTING_KEYSTORE_PASSWORD || steps.testing_signing.outputs.store_password }}
+          SCICAL_TEST_KEY_ALIAS: ${{ secrets.ANDROID_TESTING_KEY_ALIAS || steps.testing_signing.outputs.key_alias }}
+          SCICAL_TEST_KEY_PASSWORD: ${{ secrets.ANDROID_TESTING_KEY_PASSWORD || steps.testing_signing.outputs.key_password }}
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug lintDebug --no-daemon
       - name: Verify APK signature, identity and checksum
+        env:
+          SIGNING_MODE: ${{ steps.testing_signing.outputs.mode }}
+          EXPECTED_TEST_CERT_SHA256: ${{ secrets.ANDROID_TESTING_CERT_SHA256 }}
         run: |
+          set -euo pipefail
           mkdir -p artifacts
           cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/SciCal600-debug.apk
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose artifacts/SciCal600-debug.apk
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs artifacts/SciCal600-debug.apk | tee artifacts/signing-certificate.txt
+          ACTUAL_CERT_SHA256=$(awk -F': ' '/certificate SHA-256 digest:/ {print toupper($2); exit}' artifacts/signing-certificate.txt | tr -d ':[:space:]')
+          test -n "$ACTUAL_CERT_SHA256"
+          if [[ "$SIGNING_MODE" == repository-protected ]]; then
+            NORMALIZED_EXPECTED_CERT_SHA256=$(printf '%s' "$EXPECTED_TEST_CERT_SHA256" | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
+            test "$ACTUAL_CERT_SHA256" = "$NORMALIZED_EXPECTED_CERT_SHA256"
+          fi
+          printf '%s\n' "$SIGNING_MODE" > artifacts/signing-mode.txt
           "$BUILD_TOOLS/aapt" dump badging artifacts/SciCal600-debug.apk > artifacts/apk-badging.txt
           EXPECTED_VERSION_NAME="$(node -p 'require("./package.json").version')-dev.${GITHUB_RUN_NUMBER}"
           grep "package: name='io.github.justinfromhkg.scical600'" artifacts/apk-badging.txt
@@ -153,7 +202,7 @@ jobs:
           "$BUILD_TOOLS/zipalign" -p -f 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
           "$BUILD_TOOLS/apksigner" sign --ks "$RUNNER_TEMP/scical-release.jks" --ks-key-alias "$KEY_ALIAS" --ks-pass env:STORE_PASSWORD --key-pass env:KEY_PASSWORD --out SciCal600-Android.apk aligned.apk
           "$BUILD_TOOLS/apksigner" verify --verbose --print-certs SciCal600-Android.apk | tee signing-certificate.txt
-          ACTUAL_CERT_SHA256=$(awk -F': ' '/Signer #1 certificate SHA-256 digest:/ {print toupper($2); exit}' signing-certificate.txt | tr -d ':[:space:]')
+          ACTUAL_CERT_SHA256=$(awk -F': ' '/certificate SHA-256 digest:/ {print toupper($2); exit}' signing-certificate.txt | tr -d ':[:space:]')
           NORMALIZED_EXPECTED_CERT_SHA256=$(printf '%s' "$EXPECTED_CERT_SHA256" | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
           test -n "$ACTUAL_CERT_SHA256"
           test "$ACTUAL_CERT_SHA256" = "$NORMALIZED_EXPECTED_CERT_SHA256"
@@ -209,13 +258,21 @@ jobs:
           APK_SIZE=$(stat -c '%s' artifacts/SciCal600-debug.apk)
           APK_VERSION_CODE=$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" artifacts/apk-badging.txt | head -1)
           APK_VERSION_NAME=$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" artifacts/apk-badging.txt | head -1)
+          SIGNING_MODE=$(cat artifacts/signing-mode.txt)
+          SIGNING_CERT_SHA256=$(awk -F': ' '/certificate SHA-256 digest:/ {print tolower($2); exit}' artifacts/signing-certificate.txt | tr -d ':[:space:]')
           test "$APK_VERSION_CODE" = "$GITHUB_RUN_NUMBER"
           test -n "$APK_VERSION_NAME"
-          printf 'commit=%s\nworkflow_run=%s\nfile=SciCal600-debug.apk\nversion_code=%s\nversion_name=%s\nsize_bytes=%s\nsha256=%s\nsigning=development key (not production)\n' \
-            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$APK_VERSION_CODE" "$APK_VERSION_NAME" "$APK_SIZE" "$APK_SHA256" > artifacts/build-info.txt
-          printf -v NOTES '%s\n\n%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s' \
+          test -n "$SIGNING_CERT_SHA256"
+          if [[ "$SIGNING_MODE" == repository-protected ]]; then
+            SIGNING_NOTICE='This APK uses the repository-protected testing identity, so Android can install later testing-channel builds in place when their certificate matches. It is not the production signing identity.'
+          else
+            SIGNING_NOTICE='This APK uses an isolated ephemeral CI testing identity, not the production signing identity. Android requires uninstalling a testing build whose certificate differs before this APK can be installed.'
+          fi
+          printf 'commit=%s\nworkflow_run=%s\nfile=SciCal600-debug.apk\nversion_code=%s\nversion_name=%s\nsize_bytes=%s\nsha256=%s\nsigning_mode=%s\nsigning_cert_sha256=%s\nsigning=development testing key (not production)\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$APK_VERSION_CODE" "$APK_VERSION_NAME" "$APK_SIZE" "$APK_SHA256" "$SIGNING_MODE" "$SIGNING_CERT_SHA256" > artifacts/build-info.txt
+          printf -v NOTES '%s\n\n%s\n\n%s\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s' \
             'Rolling Android testing build with a public Cloudflare Pages download mirror.' \
-            'This APK passed the Web tests, full high-severity dependency audit, Gradle build/lint, signature/package checks, and Android emulator offline checks. It uses a development signing key and is not the production-signed stable app. A different development certificate can require uninstalling an older testing build.' \
+            "This APK passed the Web tests, full high-severity dependency audit, Gradle build/lint, signature/package checks, and Android emulator offline checks. $SIGNING_NOTICE" \
             'This mutable channel keeps a fixed download tag; that tag is not the asset source revision. Use the source commit, build-info.txt and immutable per-commit Release below for provenance.' \
             "Source commit: $GITHUB_SHA" \
             "Immutable audit Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$IMMUTABLE_TAG" \
@@ -223,6 +280,8 @@ jobs:
             "Android version: $APK_VERSION_NAME (code $APK_VERSION_CODE)" \
             "APK size: $APK_SIZE bytes" \
             "SHA-256: $APK_SHA256" \
+            "Signing mode: $SIGNING_MODE" \
+            "Signing certificate SHA-256: $SIGNING_CERT_SHA256" \
             "Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
           # Publish the verified build under an immutable per-commit tag before
@@ -235,7 +294,7 @@ jobs:
               --notes "$NOTES"
           fi
           gh release upload "$IMMUTABLE_TAG" \
-            artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
+            artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt artifacts/signing-certificate.txt \
             --clobber
 
           VERIFY_DIR=$(mktemp -d)
@@ -246,9 +305,12 @@ jobs:
             mkdir -p "$destination"
             gh release download "$tag" \
               --pattern 'SciCal600-debug.apk' --pattern 'SHA256SUMS' \
+              --pattern 'build-info.txt' --pattern 'signing-certificate.txt' \
               --dir "$destination" --clobber
             test "$(sha256sum "$destination/SciCal600-debug.apk" | awk '{print $1}')" = "$APK_SHA256"
             cmp -s "$destination/SHA256SUMS" artifacts/SHA256SUMS
+            cmp -s "$destination/build-info.txt" artifacts/build-info.txt
+            cmp -s "$destination/signing-certificate.txt" artifacts/signing-certificate.txt
             test "$(stat -c '%s' "$destination/SciCal600-debug.apk")" = "$APK_SIZE"
           }
 
@@ -264,11 +326,11 @@ jobs:
               --title 'SciCal600 Android APK · verified testing channel' \
               --notes "$NOTES" --prerelease --latest=false
             gh release upload "$ROLLING_TAG" \
-              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
+              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt artifacts/signing-certificate.txt \
               --clobber
           else
             gh release create "$ROLLING_TAG" \
-              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt \
+              artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt artifacts/signing-certificate.txt \
               --target "$GITHUB_SHA" --prerelease --latest=false \
               --title 'SciCal600 Android APK · verified testing channel' --notes "$NOTES"
           fi
@@ -283,7 +345,7 @@ jobs:
           npm run build
           MIRROR_DIR=dist/downloads/android-debug-latest
           mkdir -p "$MIRROR_DIR"
-          cp artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt "$MIRROR_DIR/"
+          cp artifacts/SciCal600-debug.apk artifacts/SHA256SUMS artifacts/size.txt artifacts/build-info.txt artifacts/signing-certificate.txt "$MIRROR_DIR/"
           (cd "$MIRROR_DIR" && sha256sum --check SHA256SUMS)
       - name: Publish public Android download mirror
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
@@ -313,9 +375,14 @@ jobs:
                 --connect-timeout 15 --max-time 120 \
                 "$PUBLIC_BASE/build-info.txt?run=$GITHUB_RUN_ID&attempt=$attempt" \
                 --output "$VERIFY_DIR/build-info.txt" \
+              && curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+                --connect-timeout 15 --max-time 120 \
+                "$PUBLIC_BASE/signing-certificate.txt?run=$GITHUB_RUN_ID&attempt=$attempt" \
+                --output "$VERIFY_DIR/signing-certificate.txt" \
               && test "$(sha256sum "$VERIFY_DIR/SciCal600-debug.apk" | awk '{print $1}')" = "$(awk '{print $1; exit}' artifacts/SHA256SUMS)" \
               && cmp -s "$VERIFY_DIR/SHA256SUMS" artifacts/SHA256SUMS \
-              && cmp -s "$VERIFY_DIR/build-info.txt" artifacts/build-info.txt; then
+              && cmp -s "$VERIFY_DIR/build-info.txt" artifacts/build-info.txt \
+              && cmp -s "$VERIFY_DIR/signing-certificate.txt" artifacts/signing-certificate.txt; then
               verified=true
               break
             fi

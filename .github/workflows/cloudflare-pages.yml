@@ -64,6 +64,9 @@ jobs:
             fi
           done
           if [[ "$complete" == true ]] && (cd "$SOURCE_DIR" && sha256sum --check SHA256SUMS); then
+            curl --fail --location --retry 3 --retry-delay 2 --retry-all-errors \
+              --connect-timeout 15 --max-time 120 \
+              "$PUBLIC_BASE/signing-certificate.txt" --output "$SOURCE_DIR/signing-certificate.txt" || true
             MIRROR_DIR=dist/downloads/android-debug-latest
             mkdir -p "$MIRROR_DIR"
             cp "$SOURCE_DIR"/* "$MIRROR_DIR/"

@@ -331,6 +331,15 @@ test("keeps the Android testing Release auditable and its download mirror public
   const androidVersioning = read("native/android/app/scical.gradle");
   assert.match(androidVersioning, /packageVersion\}-dev\.\$\{buildNumber\}/);
   assert.match(androidVersioning, /SCICAL_VERSION_NAME/);
+  assert.match(androidVersioning, /SCICAL_TEST_KEYSTORE/);
+  assert.match(androidVersioning, /signingConfig signingConfigs\.scicalTesting/);
+  assert.match(workflow, /ANDROID_TESTING_KEYSTORE_BASE64/);
+  assert.match(workflow, /Configure all five ANDROID_TESTING_\* secrets together/);
+  assert.match(workflow, /apksigner" verify --verbose --print-certs artifacts\/SciCal600-debug\.apk/);
+  assert.match(workflow, /\/certificate SHA-256 digest:\//);
+  assert.doesNotMatch(workflow, /Signer #1 certificate SHA-256 digest/);
+  assert.match(workflow, /signing_cert_sha256=%s/);
+  assert.match(workflow, /artifacts\/signing-certificate\.txt/);
   assert.match(androidSmoke, /device\.shell\('input keyevent KEYCODE_BACK'\)/, "Back smoke uses the selected device's ADB connection");
   assert.doesNotMatch(androidSmoke, /device\.input\.press/, "Back smoke must not require Playwright's optional Android driver APKs");
   assert.match(workflow, /node tests\/android-smoke\.cjs \|\| \(adb logcat/);
@@ -347,6 +356,7 @@ test("keeps the Android testing Release auditable and its download mirror public
   assert.match(workflow, /--connect-timeout 15 --max-time 120/);
   assert.match(workflow, /sha256sum "\$destination\/SciCal600-debug\.apk"[\s\S]*= "\$APK_SHA256"/);
   assert.match(workflow, /cmp -s "\$destination\/SHA256SUMS" artifacts\/SHA256SUMS/);
+  assert.match(workflow, /cmp -s "\$destination\/signing-certificate\.txt" artifacts\/signing-certificate\.txt/);
   assert.ok(
     workflow.indexOf('verify_release_assets "$IMMUTABLE_TAG"') < workflow.indexOf('gh release upload "$ROLLING_TAG"'),
     "the immutable audit fallback is verified before rolling assets are replaced",
