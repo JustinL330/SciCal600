@@ -35,7 +35,7 @@
   "devDependencies": {
     "@capacitor/cli": "8.5.3",
     "@capacitor/ios": "8.5.3",
-    "electron": "44.9.3",
+    "electron": "45.0.0",
     "electron-builder": "26.17.0",
     "esbuild": "0.28.2",
     "playwright": "1.63.0"
